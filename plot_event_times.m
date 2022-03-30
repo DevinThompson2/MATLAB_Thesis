@@ -33,6 +33,9 @@ stdeLive = std(liveNorm) ./ sqrt(length(liveNorm));
 avgMat = [avgTee', avgBP', avgCannon', avgLive'];
 stdeMat = [stdeTee', stdeBP', stdeCannon', stdeLive'];
 
+% Path to save file to
+path = "Z:\SSL\Research\Graduate Students\Thompson, Devin\Thesis Docs\Pitch Modality (RIP)\Thesis\Pics and Videos\Results Figs\Events\";
+
 for i = 1:length(eventNames)
     fig = gcf;
     % plot the graph
@@ -59,7 +62,7 @@ for i = 1:length(eventNames)
     xticks(1:4)
     ylabel(strcat(metrics{i}, ' Times (s)'))
     %legend(pitchModes, 'Location', 'bestoutside');
-    print(fs, strcat(metrics{i},'Times.png'),'-dpng','-r300');
+    saveas(fs, strcat(path,metrics{i},'Times.png'));
 end
 
 end

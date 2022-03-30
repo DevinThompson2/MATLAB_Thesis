@@ -34,5 +34,14 @@ xlabel("Horizontal Pitch Location (in)")
 ylabel("Vertical Pitch Location (in)")
 title("Pitch Location For Each Method (2ft in front of plate)")
 
+% Save the figure
+f = gcf;
+%f.WindowState = 'maximized';
+path = "Z:\SSL\Research\Graduate Students\Thompson, Devin\Thesis Docs\Pitch Modality (RIP)\Thesis\Pics and Videos\Results Figs\Pitch Location\";
+fileName = "PitchLocation_Total";
+savefig(f, strcat(path, fileName));
+saveas(f, strcat(path, fileName, 'png'));
+
+
 end
 

@@ -22,6 +22,13 @@ ylabel("Pitch Distance (in)")
 ylim([0 16])
 %legend(pitchModes, 'Location', 'bestoutside');
 
+% Save the figure
+f = gcf;
+%f.WindowState = 'maximized';
+path = "Z:\SSL\Research\Graduate Students\Thompson, Devin\Thesis Docs\Pitch Modality (RIP)\Thesis\Pics and Videos\Results Figs\Pitch Location\";
+fileName = strcat("StrikeZoneDistance_", subject);
+savefig(f, strcat(path, fileName));
+saveas(f, strcat(path, fileName, 'png'));
 
 end
 

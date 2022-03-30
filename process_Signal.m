@@ -1,4 +1,4 @@
-function [outTee, outBP, outCannon, outLive] = process_Signal(data, subjectNames, signalName, subjectData, signalType)
+function [outTee, outBP, outCannon, outLive] = process_Signal(data, subjectNames, signalName, varGraphNames, subjectData, signalType)
 % Process a single signal - run this function with different signal names
 % to process different signals
 
@@ -9,58 +9,35 @@ trimmedEvents = {'Foot Up','Load','First Hand Movement','Foot Down','Impact'};
 hz = 500; % hz
 pitchInfo = [-1.97 -1.56 -1.18 -.73 -.54]; % s
 
+% Graphing variable names, find graphing names equivalent to variable name
+graphIndex = find(varGraphNames == signalName);
+graphName = varGraphNames(graphIndex,2);
+
 % Create signals for each subject, each cell of avg, etc is a different
 % subject
 for i = 1:length(subjectNames)
-    [avg{i,1}, stde{i,1}, normAvg{i,1}, normStde{i,1}, normLiveAvg{i,1}, normLiveStde{i,1}, avgPercent{i,1}, stdePercent{i,1}, percentEvents{i,1}, eventTimes{i,1}, trimmedGraphingIndices{i,1}, indScores{i,1}] = separate_PitchMode_Signals(data.(subjectNames{i}), signalName, subjectNames{i}, subjectData{i}{9}, signalType, pitchInfo);
+    [avg{i,1}, stde{i,1}, normAvg{i,1}, normStde{i,1}, normLiveAvg{i,1}, normLiveStde{i,1}, avgPercent{i,1}, stdePercent{i,1}, avgSubtract{i,1}, stdeSubtract{i,1}, avgRaw{i,1}, stdeRaw{i,1}, percentEvents{i,1}, eventTimes{i,1}, trimmedGraphingIndices{i,1}, indScores{i,1}] = separate_PitchMode_Signals(data.(subjectNames{i}), signalName, graphName, subjectNames{i}, subjectData{i}{9}, signalType, pitchInfo);
 end
 
-% Compile the signals by pitch mode 
-for i = 1:length(avg)
-    % From each patricipant, put each pitch mode into a matrix
-    % Raw
-    % Avg
-    teeMat(:,i) = avg{i}{1};
-    bpMat(:,i) = avg{i}{2};
-    cannonMat(:,i) = avg{i}{3};
-    liveMat(:,i) = avg{i}{4};
-    % Stde
-    teeMatStde(:,i) = stde{i}{1};
-    bpMatStde(:,i) = stde{i}{2};
-    cannonMatStde(:,i) = stde{i}{3};
-    liveMatStde(:,i) = stde{i}{4};
-    % Normalized
-    % Avg
-    normTeeMat(:,i) = normAvg{i}{1};
-    normBPMat(:,i) = normAvg{i}{2};
-    normCannonMat(:,i) = normAvg{i}{3};
-    normLiveMat(:,i) = normAvg{i}{4};
-    %Stde
-    normTeeMatStde(:,i) = normStde{i}{1};
-    normBPMatStde(:,i) = normStde{i}{2};
-    normCannonMatStde(:,i) = normStde{i}{3};
-    normLiveMatStde(:,i) = normStde{i}{4};
-    % Normalized to the live pitch mode
-    % Avg
-    normTeeLiveMat(:,i) = normLiveAvg{i}{1};
-    normBPLiveMat(:,i) = normLiveAvg{i}{2};
-    normCannonLiveMat(:,i) = normLiveAvg{i}{3};
-    % Stde
-    normTeeLiveMatStde(:,i) = normLiveStde{i}{1};
-    normBPLiveMatStde(:,i) = normLiveStde{i}{2};
-    normCannonLiveMatStde(:,i) = normLiveStde{i}{3};
-    % Percent events
-    %Avg
-    percentTeeMat(:,i) = avgPercent{i}{1};
-    percentBPMat(:,i) = avgPercent{i}{2};
-    percentCannonMat(:,i) = avgPercent{i}{3};
-    percentLiveMat(:,i) = avgPercent{i}{4};
-    % Stde
-    percentTeeMatStde(:,i) = stdePercent{i}{1};
-    percentBPMatStde(:,i) = stdePercent{i}{2};
-    percentCannonMatStde(:,i) = stdePercent{i}{3};
-    percentLiveMatStde(:,i) = stdePercent{i}{4};
-    
+% Compile all of the signals into matrices
+
+[teeMat, bpMat, cannonMat, liveMat] = signal_cell_2_mat(avg);
+[teeMatStde, bpMatStde, cannonMatStde, liveMatStde] = signal_cell_2_mat(stde);
+[normTeeMat, normBPMat, normCannonMat, normLiveMat] = signal_cell_2_mat(normAvg);
+[normTeeMatStde, normBPMatStde, normCannonMatStde, normLiveMatStde] = signal_cell_2_mat(normStde);
+[normTeeLiveMat, normBPLiveMat, normCannonLiveMat, ~] = signal_cell_2_mat(normLiveAvg);
+[normTeeLiveMatStde, normBPLiveMatStde, normCannonLiveMatStde, ~] = signal_cell_2_mat(normLiveStde);
+[percentTeeMat, percentBPMat, percentCannonMat, percentLiveMat] = signal_cell_2_mat(avgPercent);
+[percentTeeMatStde, percentBPMatStde, percentCannonMatStde, percentLiveMatStde] = signal_cell_2_mat(stdePercent);
+[subtractTeeMat, subtractBPMat, subtractCannonMat, subtractLiveMat] = signal_cell_2_mat(avgSubtract);
+[subtractTeeMatStde, subtractBPMatStde, subtractCannonMatStde, subtractLiveMatStde] = signal_cell_2_mat(stdeSubtract);
+[rawTimeTeeMat, rawTimeBPMat, rawTimeCannonMat, rawTimeLiveMat] = signal_cell_2_mat(avgRaw);
+[rawTimeTeeMatStde, rawTimeBPMatStde, rawTimeCannonMatStde, rawTimeLiveMatStde] = signal_cell_2_mat(stdeRaw);
+% [percentEventTeeMat, percentEventBPMat, percentEventCannonMat, percentEventLiveMat] = signal_cell_2_mat(percentEvents);
+
+% Put events into matrices as well, slightly different, cant use the
+% function like above
+for i = 1:length(subjectNames)
     % Events as percent of swing
     percentEventTeeMat(i,:) = percentEvents{i}{1};
     percentEventBPMat(i,:) = percentEvents{i}{2};
@@ -75,44 +52,28 @@ for i = 1:length(avg)
 end
 
 % Average the matrices
-avgTee = mean(teeMat,2,'omitnan');
-avgBP = mean(bpMat,2,'omitnan');
-avgCannon = mean(cannonMat,2,'omitnan');
-avgLive = mean(liveMat,2,'omitnan');
-
-stdeTee = std(teeMat,1,2,'omitnan')./ sqrt(size(teeMat,2));
-stdeBP = std(bpMat,1,2,'omitnan')./ sqrt(size(bpMat,2));
-stdeCannon = std(cannonMat,1,2,'omitnan')./ sqrt(size(cannonMat,2));
-stdeLive = std(liveMat,1,2,'omitnan')./ sqrt(size(liveMat,2));
-% Normalized
-normAvgTee = mean(normTeeMat,2,'omitnan');
-normAvgBP = mean(normBPMat,2,'omitnan');
-normAvgCannon = mean(normCannonMat,2,'omitnan');
-normAvgLive = mean(normLiveMat,2,'omitnan');
-
-normStdeTee = std(normTeeMat,1,2,'omitnan')./ sqrt(size(normTeeMat,2));
-normStdeBP = std(normBPMat,1,2,'omitnan')./ sqrt(size(normBPMat,2));
-normStdeCannon = std(normCannonMat,1,2,'omitnan')./ sqrt(size(normCannonMat,2));
-normStdeLive = std(normLiveMat,1,2,'omitnan')./ sqrt(size(normLiveMat,2));
-% Normalized to live
+% Raw
+[avgTee, avgBP, avgCannon, avgLive] = avg_signal_matrices(teeMat, bpMat, cannonMat, liveMat);
+[stdeTee, stdeBP, stdeCannon, stdeLive] = stde_signal_matrices(teeMat, bpMat, cannonMat, liveMat);
+% Min-Max normalized
+[normAvgTee, normAvgBP, normAvgCannon, normAvgLive] = avg_signal_matrices(normTeeMat, normBPMat, normCannonMat, normLiveMat);
+[normStdeTee, normStdeBP, normStdeCannon, normStdeLive] = stde_signal_matrices(normTeeMat, normBPMat, normCannonMat, normLiveMat);
+% Normalized to live, subtraction, keep outside function for now
 avgTeeLive = mean(normTeeLiveMat,2,'omitnan');
 avgBPLive = mean(normBPLiveMat,2,'omitnan');
 avgCannonLive = mean(normCannonLiveMat,2,'omitnan');
-
 stdeTeeLive = std(normTeeLiveMat,1,2,'omitnan')./ sqrt(size(normTeeLiveMat,2));
 stdeBPLive = std(normBPLiveMat,1,2,'omitnan')./ sqrt(size(normBPLiveMat,2));
 stdeCannonLive = std(normCannonLiveMat,1,2,'omitnan')./ sqrt(size(normCannonLiveMat,2));
-
 % Percent of Live
-avgPercentTee = mean(percentTeeMat,2,'omitnan');
-avgPercentBP = mean(percentBPMat,2,'omitnan');
-avgPercentCannon = mean(percentCannonMat,2,'omitnan');
-avgPercentLive = mean(percentLiveMat,2,'omitnan');
-
-stdePercentTee = std(percentTeeMat,1,2,'omitnan')./ sqrt(size(percentTeeMat,2));
-stdePercentBP = std(percentBPMat,1,2,'omitnan')./ sqrt(size(percentBPMat,2));
-stdePercentCannon = std(percentCannonMat,1,2,'omitnan')./ sqrt(size(percentCannonMat,2));
-stdePercentLive = std(percentLiveMat,1,2,'omitnan')./ sqrt(size(percentLiveMat,2));
+[avgPercentTee, avgPercentBP, avgPercentCannon, avgPercentLive] = avg_signal_matrices(percentTeeMat, percentBPMat, percentCannonMat, percentLiveMat);
+[stdePercentTee, stdePercentBP, stdePercentCannon, stdePercentLive] = stde_signal_matrices(percentTeeMat, percentBPMat, percentCannonMat, percentLiveMat);
+% Subtraction, time normalized
+[avgSubtractTee, avgSubtractBP, avgSubtractCannon, avgSubtractLive] = avg_signal_matrices(subtractTeeMat, subtractBPMat, subtractCannonMat, subtractLiveMat);
+[stdeSubtractTee, stdeSubtractBP, stdeSubtractCannon, stdeSubtractLive] = stde_signal_matrices(subtractTeeMat, subtractBPMat, subtractCannonMat, subtractLiveMat);
+% Raw, normalized time
+[avgRawTimeTee, avgRawTimeBP, avgRawTimeCannon, avgRawTimeLive] = avg_signal_matrices(rawTimeTeeMat, rawTimeBPMat, rawTimeCannonMat, rawTimeLiveMat);
+[stdeRawTimeTee, stdeRawTimeBP, stdeRawTimeCannon, stdeRawTimeLive] = stde_signal_matrices(rawTimeTeeMat, rawTimeBPMat, rawTimeCannonMat, rawTimeLiveMat);
 
 % Event Times
 normTeeEvents = mean(eventTeeMat,'omitnan');
@@ -128,54 +89,34 @@ percentLiveEvents = mean(percentEventLiveMat,'omitnan');
 
 % Plotting signals
 % Raw
-upperTee = avgTee+stdeTee;
-lowerTee = avgTee-stdeTee;
-inBetweenTee = [upperTee; flipud(lowerTee)]';
-upperBP = avgBP+stdeBP;
-lowerBP = avgBP-stdeBP;
-inBetweenBP = [upperBP; flipud(lowerBP)]';
-upperCannon = avgCannon+stdeCannon;
-lowerCannon = avgCannon-stdeCannon;
-inBetweenCannon = [upperCannon; flipud(lowerCannon)]';
-upperLive = avgLive+stdeLive;
-lowerLive = avgLive-stdeLive;
-inBetweenLive = [upperLive; flipud(lowerLive)]';
+[upperTee, lowerTee, inBetweenTee] = plotting_signals(avgTee, stdeTee);
+[upperBP, lowerBP, inBetweenBP] = plotting_signals(avgBP, stdeBP);
+[upperCannon, lowerCannon, inBetweenCannon] = plotting_signals(avgCannon, stdeCannon);
+[upperLive, lowerLive, inBetweenLive] = plotting_signals(avgLive, stdeLive);
 % Normalized
-normUpperTee = normAvgTee+normStdeTee;
-normLowerTee = normAvgTee-normStdeTee;
-normInBetweenTee = [normUpperTee; flipud(normLowerTee)]';
-normUpperBP = normAvgBP+normStdeBP;
-normLowerBP = normAvgBP-normStdeBP;
-normInBetweenBP = [normUpperBP; flipud(normLowerBP)]';
-normUpperCannon = normAvgCannon+normStdeCannon;
-normLowerCannon = normAvgCannon-normStdeCannon;
-normInBetweenCannon = [normUpperCannon; flipud(normLowerCannon)]';
-normUpperLive = normAvgLive+normStdeLive;
-normLowerLive = normAvgLive-normStdeLive;
-normInBetweenLive = [normUpperLive; flipud(normLowerLive)]';
-% Normalized to Live
-upperTeeLive = avgTeeLive+stdeTeeLive;
-lowerTeeLive = avgTeeLive-stdeTeeLive;
-inBetweenTeeLive = [upperTeeLive; flipud(lowerTeeLive)]';
-upperBPLive = avgBPLive+stdeBPLive;
-lowerBPLive = avgBPLive-stdeBPLive;
-inBetweenBPLive = [upperBPLive; flipud(lowerBPLive)]';
-upperCannonLive = avgCannonLive+stdeCannonLive;
-lowerCannonLive = avgCannonLive-stdeCannonLive;
-inBetweenCannonLive = [upperCannonLive; flipud(lowerCannonLive)]';
-% Percent of Swing
-upperTeePercent = avgPercentTee+stdePercentTee;
-lowerTeePercent = avgPercentTee-stdePercentTee;
-inBetweenTeePercent = [upperTeePercent; flipud(lowerTeePercent)]';
-upperBPPercent = avgPercentBP+stdePercentBP;
-lowerBPPercent = avgPercentBP-stdePercentBP;
-inBetweenBPPercent = [upperBPPercent; flipud(lowerBPPercent)]';
-upperCannonPercent = avgPercentCannon+stdePercentCannon;
-lowerCannonPercent = avgPercentCannon-stdePercentCannon;
-inBetweenCannonPercent = [upperCannonPercent; flipud(lowerCannonPercent)]';
-upperLivePercent = avgPercentLive+stdePercentLive;
-lowerLivePercent = avgPercentLive-stdePercentLive;
-inBetweenLivePercent = [upperLivePercent; flipud(lowerLivePercent)]';
+[normUpperTee, normLowerTee, normInBetweenTee] = plotting_signals(normAvgTee, normStdeTee);
+[normUpperBP, normLowerBP, normInBetweenBP] = plotting_signals(normAvgBP, normStdeBP);
+[normUpperCannon, normLowerCannon, normInBetweenCannon] = plotting_signals(normAvgCannon, normStdeCannon);
+[normUpperLive, normLowerLive, normInBetweenLive] = plotting_signals(normAvgLive, normStdeLive);
+% Normalized to Live by subtraction
+[upperTeeLive, lowerTeeLive, inBetweenTeeLive] = plotting_signals(avgTeeLive, stdeTeeLive);
+[upperBPLive, lowerBPLive, inBetweenBPLive] = plotting_signals(avgBPLive, stdeBPLive);
+[upperCannonLive, lowerCannonLive, inBetweenCannonLive] = plotting_signals(avgCannonLive, stdeCannonLive);
+% Percent of Live
+[upperTeePercent, lowerTeePercent, inBetweenTeePercent] = plotting_signals(avgPercentTee, stdePercentTee);
+[upperBPPercent, lowerBPPercent, inBetweenBPPercent] = plotting_signals(avgPercentBP, stdePercentBP);
+[upperCannonPercent, lowerCannonPercent, inBetweenCannonPercent] = plotting_signals(avgPercentCannon, stdePercentCannon);
+[upperLivePercent, lowerLivePercent, inBetweenLivePercent] = plotting_signals(avgPercentLive, stdePercentLive);
+% Normalized by subtraction and time normalized
+[upperTeeSubtract, lowerTeeSubtract, inBetweenTeeSubtract] = plotting_signals(avgSubtractTee, stdeSubtractTee);
+[upperBPSubtract, lowerBPSubtract, inBetweenBPSubtract] = plotting_signals(avgSubtractBP, stdeSubtractBP);
+[upperCannonSubtract, lowerCannonSubtract, inBetweenCannonSubtract] = plotting_signals(avgSubtractCannon, stdeSubtractCannon);
+[upperLiveSubtract, lowerLiveSubtract, inBetweenLiveSubtract] = plotting_signals(avgSubtractLive, stdeSubtractLive);
+% Raw data, time normalized
+[upperTeeRawTime, lowerTeeRawTime, inBetweenTeeRawTime] = plotting_signals(avgRawTimeTee, stdeRawTimeTee);
+[upperBPRawTime, lowerBPRawTime, inBetweenBPRawTime] = plotting_signals(avgRawTimeBP, stdeRawTimeBP);
+[upperCannonRawTime, lowerCannonRawTime, inBetweenCannonRawTime] = plotting_signals(avgRawTimeCannon, stdeRawTimeCannon);
+[upperLiveRawTime, lowerLiveRawTime, inBetweenLiveRawTime] = plotting_signals(avgRawTimeLive, stdeRawTimeLive);
 
 % Use trimmed Graphing indices for plotting
 % All of the graphing indices are the same because the data was all trimmed
@@ -200,15 +141,15 @@ if signalType == 1
     unit2 = " Normalized (deg/deg)";
     unit3 = " Normalized to Live (deg)";
 elseif signalType == 2
-    unit1 = " deg/s";
+    unit1 = " (deg/s)";
     unit2 = " Normalized ((deg/s)/(deg/s))";
     unit3 = " Normalized to Live (deg/s)";
 elseif signalType == 3
-    unit1 = " MPH";
+    unit1 = " (MPH)";
     unit2 = " Normalized (MPH/MPH)";
     unit3 = " Normalized to Live (MPH)";
 elseif signalType == 4
-    unit1 = " Miles/hr^2";
+    unit1 = " (Miles/hr^2)";
     unit2 = " Normalized (Miles/hr^2/Miles/hr^2)";
     unit3 = " Normalized to Live (Miles/hr^2)";
 else
@@ -220,18 +161,20 @@ end
 % Subtract 100 due to Live being at 1, 100*1 = 100, spacing of numbers is
 % 0.1
 spacing = 0.1;
-teeScore = trapz(spacing,avgPercentTee) - 100;
-bpScore = trapz(spacing, avgPercentBP) - 100;
-cannonScore = trapz(spacing,avgPercentCannon) - 100;
-liveScore = trapz(spacing,avgPercentLive) - 100;
+teeScore = trapz(spacing,avgPercentTee)-100;
+bpScore = trapz(spacing, avgPercentBP)-100;
+cannonScore = trapz(spacing,avgPercentCannon)-100;
+liveScore = trapz(spacing,avgPercentLive)-100;
 scores = [teeScore; bpScore; cannonScore; liveScore];
 
 
 %% Plotting
+% I should put the plotting stuff into a function/functions
 % Plot everything in one plot - The non-normalized raw data
+% Only want the raw data now, none of the normalized data
 f = gcf;
 figure(f.Number+1)
-subplot(3,1,1)
+%subplot(3,1,1)
 hold on
 fill(newTeeGraph, inBetweenTee,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
 fill(newBPGraph, inBetweenBP,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
@@ -260,82 +203,82 @@ xline(pitchInfo(4),'c-','Pitcher Foot Down (est)','LineWidth',1)
 xline(pitchInfo(5),'c-','Pitch Release (est)','LineWidth',1)
 xlim([-2 0.5])
 legend([p1 p2 p3 p4],{'Tee','BP','Cannon','Live'},'Location','bestoutside')
-title(strcat(signalName, " For All Participants: Raw Data"))
-xlabel('Time (s)')
-ylabel(strcat(signalName, unit1))
+title(strcat(graphName, ", Raw, All Participants "))
+xlabel("Time (s)")
+ylabel(strcat(graphName, unit1))
 
-% Plot all of the normalized data, min-max
-%f = gcf;
-%figure(f.Number+1)
-subplot(3,1,2)
-hold on
-fill(newTeeGraph, normInBetweenTee,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
-fill(newBPGraph, normInBetweenBP,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
-fill(newCannonGraph, normInBetweenCannon,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
-fill(newLiveGraph, normInBetweenLive,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
-p1 = plot(teeGraph, normAvgTee, 'r', 'LineWidth',2);
-p2 = plot(bpGraph, normAvgBP, 'g', 'LineWidth',2);
-p3 = plot(cannonGraph, normAvgCannon, 'b', 'LineWidth',2);
-p4 = plot(liveGraph, normAvgLive, 'k', 'LineWidth',2);
-plot(teeGraph, normUpperTee, 'r', 'LineWidth',.5)
-plot(bpGraph, normUpperBP, 'g', 'LineWidth',.5)
-plot(cannonGraph, normUpperCannon, 'b', 'LineWidth',.5)
-plot(liveGraph, normUpperLive, 'k', 'LineWidth',.5)
-plot(teeGraph, normLowerTee, 'r', 'LineWidth',.5)
-plot(bpGraph, normLowerBP, 'g', 'LineWidth',.5)
-plot(cannonGraph, normLowerCannon, 'b', 'LineWidth',.5)
-plot(liveGraph, normLowerLive, 'k', 'LineWidth',.5)
-xline(normTeeEvents,'r-', 'LineWidth',2)
-xline(normBPEvents,'g-', 'LineWidth',2)
-xline(normCannonEvents,'b-', 'LineWidth',2)
-xline(normLiveEvents,'k-',events, 'LineWidth',2)
-xline(pitchInfo(1),'c-','Pitcher Foot Up (est)','LineWidth',1)
-xline(pitchInfo(2),'c-','Pitcher Knee Up (est)','LineWidth',1)
-xline(pitchInfo(3),'c-','Pitcher Hand Separation (est)','LineWidth',1)
-xline(pitchInfo(4),'c-','Pitcher Foot Down (est)','LineWidth',1)
-xline(pitchInfo(5),'c-','Pitch Release (est)','LineWidth',1)
-xlim([-2 0.5])
-legend([p1 p2 p3 p4],{'Tee','BP','Cannon','Live'},'Location','bestoutside')
-title(strcat(signalName, "For All Participants: Min-Max Normalized"))
-xlabel('Time (s)')
-ylabel(strcat(signalName, unit2))
-
-% Plot all of the data normalized to the Live condition
-%f = gcf;
-%figure(f.Number+1)
-subplot(3,1,3)
-hold on
-fill(newTeeGraph, inBetweenTeeLive,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
-fill(newBPGraph, inBetweenBPLive,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
-fill(newCannonGraph, inBetweenCannonLive,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
-%fill(newLiveGraph, normInBetweenLive,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
-p1 = plot(teeGraph, avgTeeLive, 'r', 'LineWidth',2);
-p2 = plot(bpGraph, avgBPLive, 'g', 'LineWidth',2);
-p3 = plot(cannonGraph, avgCannonLive, 'b', 'LineWidth',2);
-%p4 = plot(liveGraph, normAvgLive, 'k', 'LineWidth',2);
-plot(teeGraph, upperTeeLive, 'r', 'LineWidth',.5)
-plot(bpGraph, upperBPLive, 'g', 'LineWidth',.5)
-plot(cannonGraph, upperCannonLive, 'b', 'LineWidth',.5)
-%plot(liveGraph, normUpperLive, 'k', 'LineWidth',.5)
-plot(teeGraph, lowerTeeLive, 'r', 'LineWidth',.5)
-plot(bpGraph, lowerBPLive, 'g', 'LineWidth',.5)
-plot(cannonGraph, lowerCannonLive, 'b', 'LineWidth',.5)
-%plot(liveGraph, normLowerLive, 'k', 'LineWidth',.5)
-xline(normTeeEvents,'r-', 'LineWidth',2)
-xline(normBPEvents,'g-', 'LineWidth',2)
-xline(normCannonEvents,'b-', 'LineWidth',2)
-xline(normLiveEvents,'k-',events, 'LineWidth',2)
-yline(0,'k-','LineWidth',2)
-xline(pitchInfo(1),'c-','Pitcher Foot Up (est)','LineWidth',1)
-xline(pitchInfo(2),'c-','Pitcher Knee Up (est)','LineWidth',1)
-xline(pitchInfo(3),'c-','Pitcher Hand Separation (est)','LineWidth',1)
-xline(pitchInfo(4),'c-','Pitcher Foot Down (est)','LineWidth',1)
-xline(pitchInfo(5),'c-','Pitch Release (est)','LineWidth',1)
-xlim([-2 0.5])
-legend([p1 p2 p3],{'Tee','BP','Cannon'},'Location','bestoutside')
-title(strcat(signalName, " For All Participants: Normalized to Live"))
-xlabel('Time (s)')
-ylabel(strcat(signalName, unit3))
+% % Plot all of the normalized data, min-max
+% %f = gcf;
+% %figure(f.Number+1)
+% subplot(3,1,2)
+% hold on
+% fill(newTeeGraph, normInBetweenTee,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
+% fill(newBPGraph, normInBetweenBP,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
+% fill(newCannonGraph, normInBetweenCannon,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
+% fill(newLiveGraph, normInBetweenLive,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
+% p1 = plot(teeGraph, normAvgTee, 'r', 'LineWidth',2);
+% p2 = plot(bpGraph, normAvgBP, 'g', 'LineWidth',2);
+% p3 = plot(cannonGraph, normAvgCannon, 'b', 'LineWidth',2);
+% p4 = plot(liveGraph, normAvgLive, 'k', 'LineWidth',2);
+% plot(teeGraph, normUpperTee, 'r', 'LineWidth',.5)
+% plot(bpGraph, normUpperBP, 'g', 'LineWidth',.5)
+% plot(cannonGraph, normUpperCannon, 'b', 'LineWidth',.5)
+% plot(liveGraph, normUpperLive, 'k', 'LineWidth',.5)
+% plot(teeGraph, normLowerTee, 'r', 'LineWidth',.5)
+% plot(bpGraph, normLowerBP, 'g', 'LineWidth',.5)
+% plot(cannonGraph, normLowerCannon, 'b', 'LineWidth',.5)
+% plot(liveGraph, normLowerLive, 'k', 'LineWidth',.5)
+% xline(normTeeEvents,'r-', 'LineWidth',2)
+% xline(normBPEvents,'g-', 'LineWidth',2)
+% xline(normCannonEvents,'b-', 'LineWidth',2)
+% xline(normLiveEvents,'k-',events, 'LineWidth',2)
+% xline(pitchInfo(1),'c-','Pitcher Foot Up (est)','LineWidth',1)
+% xline(pitchInfo(2),'c-','Pitcher Knee Up (est)','LineWidth',1)
+% xline(pitchInfo(3),'c-','Pitcher Hand Separation (est)','LineWidth',1)
+% xline(pitchInfo(4),'c-','Pitcher Foot Down (est)','LineWidth',1)
+% xline(pitchInfo(5),'c-','Pitch Release (est)','LineWidth',1)
+% xlim([-2 0.5])
+% legend([p1 p2 p3 p4],{'Tee','BP','Cannon','Live'},'Location','bestoutside')
+% title(strcat(signalName, "For All Participants: Min-Max Normalized"))
+% xlabel('Time (s)')
+% ylabel(strcat(signalName, unit2))
+% 
+% % Plot all of the data normalized to the Live condition
+% %f = gcf;
+% %figure(f.Number+1)
+% subplot(3,1,3)
+% hold on
+% fill(newTeeGraph, inBetweenTeeLive,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
+% fill(newBPGraph, inBetweenBPLive,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
+% fill(newCannonGraph, inBetweenCannonLive,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
+% %fill(newLiveGraph, normInBetweenLive,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
+% p1 = plot(teeGraph, avgTeeLive, 'r', 'LineWidth',2);
+% p2 = plot(bpGraph, avgBPLive, 'g', 'LineWidth',2);
+% p3 = plot(cannonGraph, avgCannonLive, 'b', 'LineWidth',2);
+% %p4 = plot(liveGraph, normAvgLive, 'k', 'LineWidth',2);
+% plot(teeGraph, upperTeeLive, 'r', 'LineWidth',.5)
+% plot(bpGraph, upperBPLive, 'g', 'LineWidth',.5)
+% plot(cannonGraph, upperCannonLive, 'b', 'LineWidth',.5)
+% %plot(liveGraph, normUpperLive, 'k', 'LineWidth',.5)
+% plot(teeGraph, lowerTeeLive, 'r', 'LineWidth',.5)
+% plot(bpGraph, lowerBPLive, 'g', 'LineWidth',.5)
+% plot(cannonGraph, lowerCannonLive, 'b', 'LineWidth',.5)
+% %plot(liveGraph, normLowerLive, 'k', 'LineWidth',.5)
+% xline(normTeeEvents,'r-', 'LineWidth',2)
+% xline(normBPEvents,'g-', 'LineWidth',2)
+% xline(normCannonEvents,'b-', 'LineWidth',2)
+% xline(normLiveEvents,'k-',events, 'LineWidth',2)
+% yline(0,'k-','LineWidth',2)
+% xline(pitchInfo(1),'c-','Pitcher Foot Up (est)','LineWidth',1)
+% xline(pitchInfo(2),'c-','Pitcher Knee Up (est)','LineWidth',1)
+% xline(pitchInfo(3),'c-','Pitcher Hand Separation (est)','LineWidth',1)
+% xline(pitchInfo(4),'c-','Pitcher Foot Down (est)','LineWidth',1)
+% xline(pitchInfo(5),'c-','Pitch Release (est)','LineWidth',1)
+% xlim([-2 0.5])
+% legend([p1 p2 p3],{'Tee','BP','Cannon'},'Location','bestoutside')
+% title(strcat(signalName, " For All Participants: Normalized to Live"))
+% xlabel('Time (s)')
+% ylabel(strcat(signalName, unit3))
 
 % Save the figure
 f = gcf;
@@ -343,7 +286,7 @@ f.WindowState = 'maximized';
 path = "Z:\SSL\Research\Graduate Students\Thompson, Devin\Thesis Docs\Pitch Modality (RIP)\Thesis\Pics and Videos\Results Figs\Signals\";
 fileName = strcat(signalName,"_Total");
 savefig(f, strcat(path, fileName));
-saveas(f, strcat(path, fileName, '.png'));
+saveas(f, strcat(path, fileName, 'png'));
 
 % Plot the combined data as a percentage (fraction) of the live condition
 f = gcf;
@@ -377,17 +320,105 @@ xline(percentLiveEvents,'k-',trimmedEvents, 'LineWidth',2)
 xlim([0 100])
 %ylim([-3 3])
 legend([p1 p2 p3 p4],{'Tee','BP','Cannon','Live'},'Location','bestoutside')
-title(strcat(signalName, ' For Each Pitch Mode - All Participants'))
-xlabel('Percent of Swing')
-ylabel(strcat(signalName, " (Fraction of Live)"))
+title(strcat(graphName, ", Normalized to Live, All Participants"))
+xlabel("Percent of Swing (Foot-up to Impact)")
+ylabel(strcat(graphName, " (Percent of Live)"))
 
 % Save the figure
 f = gcf;
 f.WindowState = 'maximized';
 path = "Z:\SSL\Research\Graduate Students\Thompson, Devin\Thesis Docs\Pitch Modality (RIP)\Thesis\Pics and Videos\Results Figs\Signals\";
-fileName = strcat(signalName,"_PercentNormTotal");
+fileName = strcat(signalName,"_PercentNorm_Total");
 savefig(f, strcat(path, fileName));
-saveas(f, strcat(path, fileName, '.png'));
+saveas(f, strcat(path, fileName, 'png'));
+
+% Plot the normalized by subtraction data with normalized time
+f = gcf;
+figure(f.Number+1)
+hold on
+fill(newPercentSwing, inBetweenTeeSubtract,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
+fill(newPercentSwing, inBetweenBPSubtract,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
+fill(newPercentSwing, inBetweenCannonSubtract,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
+fill(newPercentSwing, inBetweenLiveSubtract,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
+p1 = plot(percentSwing, avgSubtractTee, 'r', 'LineWidth',2);
+p2 = plot(percentSwing, avgSubtractBP, 'g', 'LineWidth',2);
+p3 = plot(percentSwing, avgSubtractCannon, 'b', 'LineWidth',2);
+p4 = plot(percentSwing, avgSubtractLive, 'k', 'LineWidth',2);
+plot(percentSwing, upperTeeSubtract, 'r', 'LineWidth',.5)
+plot(percentSwing, upperBPSubtract, 'g', 'LineWidth',.5)
+plot(percentSwing, upperCannonSubtract, 'b', 'LineWidth',.5)
+plot(percentSwing, upperLiveSubtract, 'k', 'LineWidth',.5)
+plot(percentSwing, lowerTeeSubtract, 'r', 'LineWidth',.5)
+plot(percentSwing, lowerBPSubtract, 'g', 'LineWidth',.5)
+plot(percentSwing, lowerCannonSubtract, 'b', 'LineWidth',.5)
+plot(percentSwing, lowerLiveSubtract, 'k', 'LineWidth',.5)
+xline(percentTeeEvents,'r-', 'LineWidth',2)
+xline(percentBPEvents,'g-', 'LineWidth',2)
+xline(percentCannonEvents,'b-', 'LineWidth',2)
+xline(percentLiveEvents,'k-',trimmedEvents, 'LineWidth',2)
+%xline(pitchInfo(1),'c-','Pitcher Foot Up (est)','LineWidth',1)
+%xline(pitchInfo(2),'c-','Pitcher Knee Up (est)','LineWidth',1)
+%xline(pitchInfo(3),'c-','Pitcher Hand Separation (est)','LineWidth',1)
+%xline(pitchInfo(4),'c-','Pitcher Foot Down (est)','LineWidth',1)
+%xline(pitchInfo(5),'c-','Pitch Release (est)','LineWidth',1)
+xlim([0 100])
+%ylim([-3 3])
+legend([p1 p2 p3 p4],{'Tee','BP','Cannon','Live'},'Location','bestoutside')
+title(strcat(graphName, ", Normalized By Subtracting Live, All Participants"))
+xlabel("Percent of Swing (Foot-up to Impact)")
+ylabel(strcat(graphName, unit1))
+
+% Save the figure
+f = gcf;
+f.WindowState = 'maximized';
+path = "Z:\SSL\Research\Graduate Students\Thompson, Devin\Thesis Docs\Pitch Modality (RIP)\Thesis\Pics and Videos\Results Figs\Signals\";
+fileName = strcat(signalName,"_SubtractTimeNorm_Total");
+savefig(f, strcat(path, fileName));
+saveas(f, strcat(path, fileName, 'png'));
+
+% Plot the combined raw data
+f = gcf;
+figure(f.Number+1)
+hold on
+fill(newPercentSwing, inBetweenTeeRawTime,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
+fill(newPercentSwing, inBetweenBPRawTime,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
+fill(newPercentSwing, inBetweenCannonRawTime,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
+fill(newPercentSwing, inBetweenLiveRawTime,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
+p1 = plot(percentSwing, avgRawTimeTee, 'r', 'LineWidth',2);
+p2 = plot(percentSwing, avgRawTimeBP, 'g', 'LineWidth',2);
+p3 = plot(percentSwing, avgRawTimeCannon, 'b', 'LineWidth',2);
+p4 = plot(percentSwing, avgRawTimeLive, 'k', 'LineWidth',2);
+plot(percentSwing, upperTeeRawTime, 'r', 'LineWidth',.5)
+plot(percentSwing, upperBPRawTime, 'g', 'LineWidth',.5)
+plot(percentSwing, upperCannonRawTime, 'b', 'LineWidth',.5)
+plot(percentSwing, upperLiveRawTime, 'k', 'LineWidth',.5)
+plot(percentSwing, lowerTeeRawTime, 'r', 'LineWidth',.5)
+plot(percentSwing, lowerBPRawTime, 'g', 'LineWidth',.5)
+plot(percentSwing, lowerCannonRawTime, 'b', 'LineWidth',.5)
+plot(percentSwing, lowerLiveRawTime, 'k', 'LineWidth',.5)
+xline(percentTeeEvents,'r-', 'LineWidth',2)
+xline(percentBPEvents,'g-', 'LineWidth',2)
+xline(percentCannonEvents,'b-', 'LineWidth',2)
+xline(percentLiveEvents,'k-',trimmedEvents, 'LineWidth',2)
+%xline(pitchInfo(1),'c-','Pitcher Foot Up (est)','LineWidth',1)
+%xline(pitchInfo(2),'c-','Pitcher Knee Up (est)','LineWidth',1)
+%xline(pitchInfo(3),'c-','Pitcher Hand Separation (est)','LineWidth',1)
+%xline(pitchInfo(4),'c-','Pitcher Foot Down (est)','LineWidth',1)
+%xline(pitchInfo(5),'c-','Pitch Release (est)','LineWidth',1)
+xlim([0 100])
+%ylim([-3 3])
+legend([p1 p2 p3 p4],{'Tee','BP','Cannon','Live'},'Location','bestoutside')
+title(strcat(graphName, ", Raw Data, Time Normalized, All Participants"))
+xlabel("Percent of Swing (Foot-up to Impact)")
+ylabel(strcat(graphName, unit1))
+
+% Save the figure
+f = gcf;
+f.WindowState = 'maximized';
+path = "Z:\SSL\Research\Graduate Students\Thompson, Devin\Thesis Docs\Pitch Modality (RIP)\Thesis\Pics and Videos\Results Figs\Signals\";
+fileName = strcat(signalName,"_RawNormTime_Total");
+savefig(f, strcat(path, fileName));
+saveas(f, strcat(path, fileName, 'png'));
 
 %% Output necessary data to Excel and diplay the data here
 % Put index scores into a single
@@ -428,6 +459,7 @@ outLiveCannon = [normCannonLiveMat cannonGraph avgCannonLive];
 outLiveTeeStde = [normTeeLiveMatStde teeGraph stdeTeeLive];
 outLiveBPStde = [normBPLiveMatStde bpGraph stdeBPLive];
 outLiveCannonStde = [normCannonLiveMatStde cannonGraph stdeCannonLive];
+
 % Normalized to live condition as percentage
 outPercentTee = [percentTeeMat percentSwing avgPercentTee];
 outPercentBP = [percentBPMat percentSwing avgPercentBP];
@@ -439,20 +471,24 @@ outPercentBPStde = [percentBPMatStde percentSwing stdePercentBP];
 outPercentCannonStde = [percentCannonMatStde percentSwing stdePercentCannon];
 outPercentLiveStde = [percentLiveMatStde percentSwing stdePercentLive];
 
+% Normalized by subtraction and normalized time
+
+% Raw and normalized time
+
 % Compile the avg and stde values (order is raw, MM, Live, percent live)
 outTee = {outRawTee outRawTeeStde outMMTee outMMTeeStde outLiveTee outLiveTeeStde outPercentTee outPercentTeeStde};
 outBP = {outRawBP outRawBPStde outMMBP outMMBPStde outLiveBP outLiveBPStde outPercentBP outPercentBPStde};
 outCannon = {outRawCannon outRawCannonStde outMMCannon outMMCannonStde outLiveCannon outLiveCannonStde outPercentCannon outPercentCannonStde};
 outLive = {outRawLive outRawLiveStde outMMLive outMMLiveStde outPercentLive outPercentLiveStde};
 
-% Get the first value where the name (first column) is open
+%% Get the first value where the name (first column) is open
 writeScore = 0;
 if writeScore == 1
     write_Scores_xlsx(outScores,signalName)
 end 
 
-% Write the signal data
-writeSignal = 1;
+%% Write the signal data
+writeSignal = 0;
 if writeSignal == 1
     write_Signal_Data_xlsx(outTee, signalName, 1); % Tee = 1
     write_Signal_Data_xlsx(outBP, signalName, 2); % BP = 2

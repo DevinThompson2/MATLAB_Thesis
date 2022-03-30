@@ -63,5 +63,13 @@ xticks(1:4)
 ylabel(strcat(metric, ' (deg/s)'))
 %legend(pitchModes, 'Location', 'bestoutside');
 print(fs, strcat(metric,'Max.png'),'-dpng','-r300');
+
+% Save the figure
+f = gcf;
+%f.WindowState = 'maximized';
+path = "Z:\SSL\Research\Graduate Students\Thompson, Devin\Thesis Docs\Pitch Modality (RIP)\Thesis\Pics and Videos\Results Figs\Max Metrics\";
+fileName = strcat(metric,"_Max");
+savefig(f, strcat(path, fileName));
+saveas(f, strcat(path, fileName, 'png'));
 end
 

@@ -1,4 +1,4 @@
-function [outputArg1,outputArg2] = calculate_Pitch_Location(subjectData, subjects)
+function calculate_Pitch_Location(subjectData, subjects)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 

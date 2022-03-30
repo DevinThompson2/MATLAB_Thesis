@@ -1,4 +1,4 @@
-function [avgData, stdeData, percentEvents] = normalize_To_Live(signalData, eventData, indices, pitchInfo, signalName, subjectName)
+function [avgData, stdeData, percentEvents] = normalize_To_Live(signalData, eventData, indices, pitchInfo, signalName, graphName, subjectName, unit)
 % Normalize the signal data to the live condition for each player - average
 % of live condition
 
@@ -52,24 +52,24 @@ avgLive = mean(interpolatedData{4},2,'omitnan');
 normalizedData = divide_By_Live(interpolatedData, avgLive);
 % Average the data - These values are being output
 for i = 1:length(normalizedData)
-    avgData{i,1} = mean(normalizedData{i}, 2, 'omitnan'); % To be percentage?
-    stdeData{i,1} = (std(normalizedData{i},0,2,'omitnan')./ sqrt(size(normalizedData{i},2))); % To be percentage?
+    avgData{i,1} = mean(normalizedData{i}, 2, 'omitnan')*100; % To be percentage?
+    stdeData{i,1} = ((std(normalizedData{i},0,2,'omitnan'))./ (sqrt(size(normalizedData{i},2))))*100; % To be percentage?
 end
 
 %% Create graphing variables and graph the normalized data
 % Plot the normalized
 % First index is Tee, second is BP, third is Cannon, fourth is Live
-upperTee = avgData{1}+stdeData{1};
-lowerTee = avgData{1}-stdeData{1};
+upperTee = (avgData{1}+stdeData{1});
+lowerTee = (avgData{1}-stdeData{1});
 inBetweenTee = [upperTee; flipud(lowerTee)]';
-upperBP = avgData{2}+stdeData{2};
-lowerBP = avgData{2}-stdeData{2};
+upperBP = (avgData{2}+stdeData{2});
+lowerBP = (avgData{2}-stdeData{2});
 inBetweenBP = [upperBP; flipud(lowerBP)]';
-upperCannon = avgData{3}+stdeData{3};
-lowerCannon = avgData{3}-stdeData{3};
+upperCannon = (avgData{3}+stdeData{3});
+lowerCannon = (avgData{3}-stdeData{3});
 inBetweenCannon = [upperCannon; flipud(lowerCannon)]';
-upperLive = avgData{4}+stdeData{4};
-lowerLive = avgData{4}-stdeData{4};
+upperLive = (avgData{4}+stdeData{4});
+lowerLive = (avgData{4}-stdeData{4});
 inBetweenLive = [upperLive; flipud(lowerLive)]';
 
 % Create x array for plotting
@@ -110,9 +110,9 @@ xline(percentEvents{4},'k-',trimmedEvents, 'LineWidth',2)
 xlim([0 100])
 %ylim([-3 3])
 legend([p1 p2 p3 p4],{'Tee','BP','Cannon','Live'},'Location','bestoutside')
-title(strcat(signalName, ' For Each Pitch Mode: ', subjectName))
-xlabel('Percent of Swing')
-ylabel(strcat(signalName, " (Fraction of Live)"))
+title(strcat(graphName, ", Normalized to Live, For Each Pitch Mode- ", subjectName))
+xlabel("Percent of Swing (Foot-up to Impact)")
+ylabel(strcat(graphName, " (Percent of Live)"))
 
 % Save the figure as .png and mat
 f = gcf;
@@ -120,7 +120,7 @@ f.WindowState = 'maximized';
 path = "Z:\SSL\Research\Graduate Students\Thompson, Devin\Thesis Docs\Pitch Modality (RIP)\Thesis\Pics and Videos\Results Figs\Signals\";
 fileName = strcat(signalName,"_PercentNorm_", subjectName);
 savefig(f, strcat(path, fileName));
-saveas(f, strcat(path, fileName, '.png'));
+saveas(f, strcat(path, fileName, 'png'));
 
 end
 

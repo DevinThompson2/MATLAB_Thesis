@@ -21,10 +21,14 @@ for i = 1:length(trimmedEvents)
     avgEvents{i,1} = mean(trimmedEvents{i,1}, 'omitnan');
 end
 
-% Normalize the averaged events for each pitch moded
+% Normalize the averaged events for each pitch mode, from foot-up to impact
+% (0 to 100)
 for i = 1:length(avgEvents)
-    normEvents{i,1} = ((avgEvents{i,1} - min(avgEvents{i,1})) ./ -min(avgEvents{i,1})) * 100;
+    normEvents{i,1} = ((avgEvents{i,1} - avgEvents{i,1}(1,1)) ./ -avgEvents{i,1}(1,1)) * 100;
 end
+% for i = 1:length(avgEvents)
+%     normEvents{i,1} = ((avgEvents{i,1} - min(avgEvents{i,1})) ./ -min(avgEvents{i,1})) * 100;
+% end
 
 % Get the indices of foot up to impact for all trials
 for i = 1:length(footUpTimes)
