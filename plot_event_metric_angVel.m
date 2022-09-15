@@ -5,7 +5,7 @@ function plot_event_metric_angVel(teeData, bpData, cannonData, liveData, metric)
 % foot-down, or impact event tables
 
 eventNames = {'Stance';'Load';'FirstMove';'FootDown';'Impact';'FollowThrough'};
-pitchModes = {'Tee';'BP';'Cannon';'Live'};
+pitchModes = {'Tee';'BP';'RPM';'Live'};
 
 % Create new variables that only have the event tables in them
 % Tee

@@ -1,9 +1,11 @@
 function plot_event_times(teeData, bpData, cannonData, liveData, metrics)
 %UNTITLED5 Summary of this function goes here
 %   Detailed explanation goes here
-
-pitchModes = {'Tee';'BP';'Cannon';'Live'};
+set(groot, 'defaultAxesFontName', 'Arial');
+set(groot,'defaultAxesFontSize',14)
+pitchModes = {'Tee';'BP';'RPM';'Live'};
 eventNames = {'Stance';'FootUp';'Load';'FirstMove';'FootDown';'Impact';'FollowThrough'};
+graphNames = {"Stance";"Foot Up";"Load";"First Hand Movement";"Foot Down";"Impact";"Follow Through"}
 
 % Extract the desired metrics: stance, load, foot-down, impact
 for i = 1:length(metrics)
@@ -56,13 +58,14 @@ for i = 1:length(eventNames)
     % errorbar(x, avgMat(i,:), stdeMat(i,:), 'k','linestyle','none') % adjust to (:,i) to graph each event
     errorbar(x, avgMat(i,:), stdeMat(i,:), 'ko','MarkerFaceColor','k')
     hold off
-    title(strcat(metrics{i},' times for each pitch mode'))
+    %title(strcat(metrics{i},' times for each pitch mode'))
     xlim([0 5])
     set(gca,'xtickLabel',pitchModes)
     xticks(1:4)
-    ylabel(strcat(metrics{i}, ' Times (s)'))
+    ylabel(strcat(graphNames{i}, " Times (s)"))
     %legend(pitchModes, 'Location', 'bestoutside');
-    saveas(fs, strcat(path,metrics{i},'Times.png'));
+    saveas(fs, strcat(path,metrics{i},"Times.png"));
+    savefig(fs, strcat(path,metrics{i},"Times"))
 end
 
 end

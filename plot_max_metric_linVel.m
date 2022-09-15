@@ -1,7 +1,11 @@
-function plot_max_metric_linVel(teeData, bpData, cannonData, liveData, metric)
+function plot_max_metric_linVel(teeData, bpData, cannonData, liveData, metric, names)
 % Input: teeData, bpData, cannonData, liveData; tables, with all data, n tables for each category
 
-pitchModes = {'Tee';'BP';'Cannon';'Live'};
+pitchModes = {'Tee';'BP';'RPM';'Live'};
+
+% Compare the metric name to the names and get the graphing name out
+nameIndex = find(metric == names);
+graphName = names(nameIndex,2);
 
 % Figure out which table to get the data from and extract table that metric
 % is in
@@ -28,6 +32,45 @@ maxTeeMPH = maxTeeMetric * 2.23694; % mph
 maxBPMPH = maxBPMetric * 2.23694; % mph
 maxCannonMPH = maxCannonMetric * 2.23694; % mph
 maxLiveMPH = maxLiveMetric * 2.23694; % mph
+
+% Perform statistical test
+% Create tables needed for fitrm function
+resultsVec = [maxTeeMPH; maxBPMPH; maxCannonMPH; maxLiveMPH];
+results = [maxTeeMPH maxBPMPH maxCannonMPH maxLiveMPH];
+t = array2table(results, 'VariableNames',{'Tee', 'BP','RPM','Live'});
+within = table(["Tee" "BP" "RPM" "Live"]','VariableNames',{'PitchCondition'});
+within.PitchCondition = categorical(within.PitchCondition);
+
+% Test normality of residuals
+f = gcf;
+figure(f.Number+1)
+normplot(resultsVec)
+%[hAD,pAD] = adtest(resultsVec)
+%[hL, pL] = lillietest(resultsVec)
+[hSW, pSW, wSW] = swtest(resultsVec, 0.05)
+% using SW test, h = 1, p<0.05, reject null hypothesis, so there is
+% evidence that the data is not normally distributed. Need to use different
+% variance and ANOVA tests (kruskal-wallis)
+
+% Test homogeneity of variance
+% Since not normally distributed, need to do another test for variance
+% using correction factor - Use Brown-Forsythe
+[pV, statsBF] = vartestn(results,'TestType','BrownForsythe')
+% Do not reject null hypothesis that variances are equal
+
+%%%%%%%%%%%%%%%%% Overall: Not normally distrubuted, Variances are equal
+
+% Perform the ANOVA test
+rm = fitrm(t, 'Tee-Live ~ 1', 'WithinDesign', within);
+ranovatb1 = ranova(rm, 'WithinModel','PitchCondition')
+disp(anovaTable(ranovatb1, 'Max Bat Sweet Spot Velocity (mph)'));
+% Need to use Friedman test
+[pF, FriedmanTable] = friedman(results,1)
+% Perform Mauchly test for sphericity
+mTestTable = mauchly(rm)
+
+% Perform MC tests
+mcTable = multcompare(rm,'PitchCondition')
 
 % Find mean and standard error for each
 avgTee = mean(maxTeeMPH);
@@ -62,13 +105,13 @@ x = 1:length(pitchModes);
 %errorbar(x, avgMat, stdeMat, 'k','linestyle','none')
 errorbar(x, avgMat, stdeMat, 'ko','MarkerFaceColor','k')
 hold off
-title(strcat(metric,' for each pitch mode'))
+% title(strcat(metric,' for each pitch mode'))
 xlim([0 5])
 set(gca,'xtickLabel',pitchModes)
 xticks(1:4)
-ylabel(strcat(metric, ' (mph)'))
+ylabel(strcat(graphName, " (mph)"))
 %legend(pitchModes, 'Location', 'bestoutside');
-print(fs, strcat(metric,'Max.png'),'-dpng','-r300');
+%print(fs, strcat(metric,'Max.png'),'-dpng','-r300');
 
 % Save the figure
 f = gcf;
@@ -76,7 +119,7 @@ f = gcf;
 path = "Z:\SSL\Research\Graduate Students\Thompson, Devin\Thesis Docs\Pitch Modality (RIP)\Thesis\Pics and Videos\Results Figs\Max Metrics\";
 fileName = strcat(metric,"_Max");
 savefig(f, strcat(path, fileName));
-saveas(f, strcat(path, fileName, 'png'));
+saveas(f, strcat(path, fileName), 'png');
 
 end
 
