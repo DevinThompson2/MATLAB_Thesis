@@ -1,9 +1,10 @@
 function [contactRate, goodIndex] = compute_Contact_Rate(launch, spray)
 % Compute the contact rate for each subject and each method
 
+% -45 and 45, -10 and 35
 for i = 1:length(launch)
     for j = 1:length(launch{i})
-        if (launch{i}(j) >= -10 && launch{i}(j) <= 30) &&...
+        if (launch{i}(j) >= -10 && launch{i}(j) <= 35) &&...
                     (spray{i}(j) >=-45 && spray{i}(j) <=45)
                 goodIndex{i,1}(j,1) = 1;
         else

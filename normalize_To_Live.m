@@ -9,7 +9,11 @@ function [avgData, stdeData, percentEvents, normalizedData] = normalize_To_Live(
 % (3) Divide all non-live swing trials by the average live swing trial
 
 events = {'Stance','Foot Up','Load','First Hand Movement','Foot Down','Impact','Follow Through'};
+
+% Comment and uncomment the trimmed events to change the range
+
 trimmedEvents = {'Foot Up','Load','First Hand Movement','Foot Down','Impact'};
+%trimmedEvents = {'First Hand Movement','Foot Down','Impact'};
 eventVarNames = {'stance','footUp','load','firstMove','footDown','impact','followThrough'};
 hz = 500; % Sampling frequency
 
@@ -119,7 +123,7 @@ if graph == 1
     ax= gca;
     ax.FontSize = subLabelSize;
     ax.FontWeight = 'bold';
-    xLineFootUp = ax.Children(5);
+    xLineFootUp = ax.Children(5); % Change this number when adjusting the events
     xLineFootUp.LabelHorizontalAlignment = "right";
     xLineImpact = ax.Children(1);
     xLineImpact.LabelHorizontalAlignment = "left";

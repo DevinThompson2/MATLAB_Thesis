@@ -1,6 +1,6 @@
 function plot_Pitch_Location_Subject(tee, bp, cannon, live, subject)
 % Plot pitch location for a certain subject
-set(groot,'defaultAxesFontSize',12)
+set(groot,'defaultAxesFontSize',20)
 
 %% All Data
 % Create the figure
@@ -29,11 +29,11 @@ scatter(mean(tee(:,1)), mean(tee(:,2)), 'ro', 'MarkerFaceColor', 'r', 'MarkerFac
 scatter(mean(bp(:,1)), mean(bp(:,2)), 'go', 'MarkerFaceColor', 'g', 'MarkerFaceAlpha', 1, 'MarkerEdgeAlpha', 1)
 scatter(mean(cannon(:,1)), mean(cannon(:,2)), 'bo', 'MarkerFaceColor', 'b', 'MarkerFaceAlpha', 1, 'MarkerEdgeAlpha', 1)
 scatter(mean(live(:,1)), mean(live(:,2)), 'ko', 'MarkerFaceColor', 'k', 'MarkerFaceAlpha', 1, 'MarkerEdgeAlpha', 1)
-legend("Tee","BP","RPM","Live", "Avg Tee","Avg BP","Avg RPM", "Avg Live")
+legend(["Tee","BP","RPM","Live", "Avg Tee","Avg BP","Avg RPM", "Avg Live"], 'FontSize', 10)
 grid on
 axis([-36 36 0 60])
-xlabel("Horizontal Pitch Location (in)")
-ylabel("Vertical Pitch Location (in)")
+xlabel("Horizontal Pitch Location (in)", 'FontWeight','bold')
+ylabel("Vertical Pitch Location (in)", 'FontWeight','bold')
 %title(strcat("Pitch Location For Each Method, ", subject, " (2ft in front of plate)"))
 
 % Save the figure
@@ -71,11 +71,11 @@ errorbar(mean(tee(:,1)), mean(tee(:,2)), std(tee(:,2)), std(tee(:,2)), std(tee(:
 errorbar(mean(bp(:,1)), mean(bp(:,2)), std(bp(:,2)), std(bp(:,2)), std(bp(:,1)), std(bp(:,1)), 'g')
 errorbar(mean(cannon(:,1)), mean(cannon(:,2)), std(cannon(:,2)), std(cannon(:,2)), std(cannon(:,1)), std(cannon(:,1)), 'b')
 errorbar(mean(live(:,1)), mean(live(:,2)), std(live(:,2)), std(live(:,2)), std(live(:,1)), std(live(:,1)), 'k')
-legend("Tee","BP","RPM","Live")
+legend(["Tee","BP","RPM","Live"], 'FontSize', 14)
 grid on
 axis([-36 36 0 60])
-xlabel("Horizontal Pitch Location (in)")
-ylabel("Vertical Pitch Location (in)")
+xlabel("Horizontal Pitch Location (in)",'FontWeight','bold')
+ylabel("Vertical Pitch Location (in)",'FontWeight','bold')
 %title(strcat("Pitch Location For Each Method, ", subject, " (2ft in front of plate)"))
 
 % Save the figure

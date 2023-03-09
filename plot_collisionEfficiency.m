@@ -52,13 +52,16 @@ hold on
 % end
 x = 1:length(pitchModes);
 %errorbar(x, avgMat, stdeMat, 'k','linestyle','none')
-errorbar(x, avgMat, stdeMat, 'ko','MarkerFaceColor','k')
+colors = ["r" "g" "b" "k"];
+for i = 1:length(x)
+    errorbar(x(i), avgMat(i), stdeMat(i), 'o','MarkerFaceColor',colors(i), 'MarkerEdgeColor',colors(i), 'Color', colors(i),'LineWidth', 2, 'MarkerSize', 8,'CapSize', 10)
+end
 hold off
 %title(strcat(metric,' for each pitch mode'))
 xlim([0 5])
-set(gca,'xtickLabel',pitchModes)
+set(gca,'xtickLabel',pitchModes, 'FontWeight','bold')
 xticks(1:4)
-ylabel(strcat(graphName))
+ylabel(strcat(graphName), 'FontWeight','bold')
 %legend(pitchModes, 'Location', 'bestoutside');
 %print(fs, strcat(metric,'Max.png'),'-dpng','-r300');
 

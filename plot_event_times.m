@@ -5,7 +5,7 @@ set(groot, 'defaultAxesFontName', 'Arial');
 set(groot,'defaultAxesFontSize',14)
 pitchModes = {'Tee';'BP';'RPM';'Live'};
 eventNames = {'Stance';'FootUp';'Load';'FirstMove';'FootDown';'Impact';'FollowThrough'};
-graphNames = {"Stance";"Foot Up";"Load";"First Hand Movement";"Foot Down";"Impact";"Follow Through"}
+graphNames = {"Stance";"Foot Up";"Load";"Hand Movement";"Foot Down";"Impact";"Follow Through"}
 
 % Extract the desired metrics: stance, load, foot-down, impact
 for i = 1:length(metrics)
@@ -56,13 +56,17 @@ for i = 1:length(eventNames)
     % end
     x = 1:length(pitchModes);
     % errorbar(x, avgMat(i,:), stdeMat(i,:), 'k','linestyle','none') % adjust to (:,i) to graph each event
-    errorbar(x, avgMat(i,:), stdeMat(i,:), 'ko','MarkerFaceColor','k')
+    % errorbar(x, avgMat(i,:), stdeMat(i,:), 'ko','MarkerFaceColor','k')
+    colors = ["r" "g" "b" "k"];
+    for j = 1:length(x)
+        errorbar(x(j), avgMat(i,j), stdeMat(i,j), 'o','MarkerFaceColor',colors(j), 'MarkerEdgeColor',colors(j), 'Color', colors(j),'LineWidth', 2, 'MarkerSize', 8,'CapSize', 10)
+    end
     hold off
     %title(strcat(metrics{i},' times for each pitch mode'))
     xlim([0 5])
-    set(gca,'xtickLabel',pitchModes)
+    set(gca,'xtickLabel',pitchModes,'FontSize', 20, 'FontWeight','bold')
     xticks(1:4)
-    ylabel(strcat(graphNames{i}, " Times (s)"))
+    ylabel(strcat(graphNames{i}, " Times (s)"),'FontSize', 20, 'FontWeight','bold')
     %legend(pitchModes, 'Location', 'bestoutside');
     saveas(fs, strcat(path,metrics{i},"Times.png"));
     savefig(fs, strcat(path,metrics{i},"Times"))

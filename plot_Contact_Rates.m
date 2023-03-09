@@ -7,17 +7,17 @@ x = 1:length(pitchModes);
 f = gcf;
 figure(f.Number+1)
 hold on
-errorbar(x(1), average(1), stde(1), 'ko','MarkerFaceColor','k')
-errorbar(x(2), average(2), stde(2), 'ko','MarkerFaceColor','k')
-errorbar(x(3), average(3), stde(3), 'ko','MarkerFaceColor','k')
-errorbar(x(4), average(4), stde(4), 'ko','MarkerFaceColor','k')
+errorbar(x(1), average(1), stde(1), 'ro','MarkerFaceColor','r','LineWidth', 2, 'MarkerSize', 8,'CapSize', 10)
+errorbar(x(2), average(2), stde(2), 'go','MarkerFaceColor','g','LineWidth', 2, 'MarkerSize', 8,'CapSize', 10)
+errorbar(x(3), average(3), stde(3), 'bo','MarkerFaceColor','b','LineWidth', 2, 'MarkerSize', 8,'CapSize', 10)
+errorbar(x(4), average(4), stde(4), 'ko','MarkerFaceColor','k','LineWidth', 2, 'MarkerSize', 8,'CapSize', 10)
 hold off
 %title("Quality Contact Rate For Each Pitch Method","FontSize", 16)
 xlim([0 5])
 ylim([0 1])
-set(gca,'xtickLabel',pitchModes)
+set(gca,'xtickLabel',pitchModes, 'FontWeight', 'bold', "FontSize", 20)
 xticks(1:4)
-ylabel("Contact Rate (Fraction of Total)", "FontSize", 14)
+ylabel("Line Drive Rate (Fraction)", "FontSize", 20, 'FontWeight', 'bold')
 
 %legend(pitchModes, 'Location', 'bestoutside');
 % Save the figure

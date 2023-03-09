@@ -1,4 +1,4 @@
-function plot_batSpeedvsPitchTime(data,subjectNames, batSpeedName, pitchSpeedName, swingTimeName)
+function plot_batSpeedvsPitchTime(data,inTables,subjectNames, batSpeedName, pitchSpeedName, swingTimeName)
 % Inputs: data: structure with all of the data that has the bat speed and pitch speed data
 % batSpeedName: the name of the bat speed metric
 % pitchSpeedName: the name of the pitch speed metric
@@ -19,6 +19,10 @@ end
 for i = 1:length(swingTimeTables)
     swingTime{i} = swingTimeTables{i}.(swingTimeName);
 end
+
+% Separate the data by pitch mode instead of by subject
+[swingTimeSort, batSpeedSort] = create_PitchMode_Vectors(inTables);
+
 
 %% Replace any empty data with NaN
 % Replace empty cells with nan
@@ -168,7 +172,7 @@ plot(pitchSpeedModel)
 xlabel('Pitch Speed (mph)')
 ylabel('Bat Sweet Spot Speed (mph)')
 title('Bat Speed vs Pitch Speed')
-text(20,66,sprintf('R^2: %.3f', pitchSpeedModel.Rsquared.Adjusted))
+text(20,66,sprintf('R^2: %.3f', pitchSpeedModel.Rsquared.Ordinary))
 print(fs,'batSpeedvsPitchSpeed.png','-dpng','-r300');
 
 % Plot the Swing speed vs estimated time
@@ -180,19 +184,22 @@ plot(estimatePitchTimeModel)
 xlabel('Estimated Time to Swing (s)')
 ylabel('Bat Speed (mph)')
 title('Bat Speed vs Estimated Time to Swing')
-text(0.53,63,sprintf('R^2: %.3f', estimatePitchTimeModel.Rsquared.Adjusted))
+text(0.53,63,sprintf('R^2: %.3f', estimatePitchTimeModel.Rsquared.Ordinary))
 print(fs,'batSpeedvsEstTime.png','-dpng','-r300');
 
 % Plot the swing speed vs swing time
 f = gcf;
 fs = figure(f.Number+1);
 hold on
-%scatter(swingTimeVec,batSpeedVec,'.')
 plot(swingTimeModel);
+scatter(swingTimeSort{1}, batSpeedSort{1}, 'ro', 'MarkerFaceColor', 'r', 'MarkerFaceAlpha', 1, 'MarkerEdgeAlpha', 1)
+scatter(swingTimeSort{2}, batSpeedSort{2}, 'go', 'MarkerFaceColor', 'g', 'MarkerFaceAlpha', 1, 'MarkerEdgeAlpha', 1)
+scatter(swingTimeSort{3}, batSpeedSort{3}, 'bo', 'MarkerFaceColor', 'b', 'MarkerFaceAlpha', 1, 'MarkerEdgeAlpha', 1)
+scatter(swingTimeSort{4}, batSpeedSort{4}, 'ko', 'MarkerFaceColor', 'k', 'MarkerFaceAlpha', 1, 'MarkerEdgeAlpha', 1)
 xlabel('Swing Time (s)')
 ylabel('Bat Speed (mph)')
 title('Bat Speed vs Swing Time')
-text(.15,64,sprintf('R^2: %.3f', swingTimeModel.Rsquared.Adjusted))
+text(.15,64,sprintf('R^2: %.3f', swingTimeModel.Rsquared.Ordinary))
 print(fs,'batSpeedvsSwingTime.png','-dpng','-r300');
 
 % Plot the normalized bat speed in the model
@@ -205,7 +212,7 @@ plot(pitchSpeedNormModel)
 xlabel('Pitch Speed (mph)')
 ylabel('Normalized Bat Speed (mph/subjectAvgMPH)')
 title('Bat Speed vs Pitch Speed')
-text(20,0.925,sprintf('R^2: %.3f', pitchSpeedNormModel.Rsquared.Adjusted))
+text(20,0.925,sprintf('R^2: %.3f', pitchSpeedNormModel.Rsquared.Ordinary))
 print(fs,'batSpeedvsPitchSpeedNorm.png','-dpng','-r300');
 
 % Plot the Swing speed vs estimated time
@@ -217,7 +224,7 @@ plot(estimatePitchTimeNormModel)
 xlabel('Estimated Time to Swing (s)')
 ylabel('Normalized Bat Speed (mph/subjectAvgMPH)')
 title('Bat Speed vs Estimated Time to Swing')
-text(0.6,0.9,sprintf('R^2: %.3f', estimatePitchTimeNormModel.Rsquared.Adjusted))
+text(0.6,0.9,sprintf('R^2: %.3f', estimatePitchTimeNormModel.Rsquared.Ordinary))
 print(fs,'batSpeedvsEstTimeNorm.png','-dpng','-r300');
 
 % Plot the swing speed vs swing time
@@ -229,7 +236,7 @@ plot(swingTimeNormModel)
 xlabel('Swing Time (s)')
 ylabel('Normalized Bat Speed (mph/subjectAvgMPH)')
 title('Bat Speed vs Swing Time')
-text(.15,0.9,sprintf('R^2: %.3f', swingTimeNormModel.Rsquared.Adjusted))
+text(.15,0.9,sprintf('R^2: %.3f', swingTimeNormModel.Rsquared.Ordinary))
 print(fs,'batSpeedvsSwingTimeNorm.png','-dpng','-r300');
 
 end

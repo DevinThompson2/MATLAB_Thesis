@@ -9,7 +9,11 @@ function [avgData, stdeData, percentEvents, normalizedData] = normalize_To_Live_
 % (3) Subtract all average live swing trial from each non-live trial
 
 events = {'Stance','Foot Up','Load','First Hand Movement','Foot Down','Impact','Follow Through'};
+
+% Comment and uncomment the trimmed events to change the range
+
 trimmedEvents = {'Foot Up','Load','First Hand Movement','Foot Down','Impact'};
+%trimmedEvents = {'First Hand Movement','Foot Down','Impact'};
 eventVarNames = {'stance','footUp','load','firstMove','footDown','impact','followThrough'};
 hz = 500; % Sampling frequency
 

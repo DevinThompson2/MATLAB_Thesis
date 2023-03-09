@@ -104,6 +104,14 @@ elseif signalType == 4
     bpMat = bpMat * 8052.9706513958 ; % miles/hr^2
     cannonMat = cannonMat * 8052.9706513958 ; % miles/hr^2
     liveMat = liveMat * 8052.9706513958 ; % miles/hr^2
+elseif signalType == 5
+    unit1 = " (Joules)";
+    unit2 = " Normalized (Joules/Joules)";
+    unit3 = " Normalized to Live (Joules)";
+elseif signalType == 6
+    unit1 = " (Watts)";
+    unit2 = " Normalized (Watts/Watts)";
+    unit3 = " Normalized to Live (Watts)";
 else
     error('signalType input is not correct')
 end

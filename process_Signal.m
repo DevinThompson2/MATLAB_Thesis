@@ -5,7 +5,11 @@ function [outTee, outBP, outCannon, outLive] = process_Signal(data, subjectNames
 % Extract the event times from teeData, bpData, cannonData, Live Data
 %eventNames = {'stance','load','footDown','impact','firstMove','followThrough'};
 events = {'Stance','Foot Up','Load','First Hand Movement','Foot Down','Impact','Follow Through'};
+
+% Comment and uncomment the trimmed events to change the range
+
 trimmedEvents = {'Foot Up','Load','First Hand Movement','Foot Down','Impact'};
+%trimmedEvents = {'First Hand Movement','Foot Down','Impact'};
 hz = 500; % hz
 pitchInfo = [-1.97 -1.56 -1.18 -.73 -.54]; % s
 
@@ -158,6 +162,14 @@ elseif signalType == 4
     unit1 = " (Miles/hr^2)";
     unit2 = " Normalized (Miles/hr^2/Miles/hr^2)";
     unit3 = " Normalized to Live (Miles/hr^2)";
+elseif signalType == 5
+    unit1 = " (Joules)";
+    unit2 = " Normalized (Joules/Joules)";
+    unit3 = " Normalized to Live (Joules)";
+elseif signalType == 6
+    unit1 = " (Watts)";
+    unit2 = " Normalized (Watts/Watts)";
+    unit3 = " Normalized to Live (Watts)";
 else
     error('signalType input is not correct')
 end
@@ -474,7 +486,7 @@ saveas(f, strcat(path, fileName), 'png');
 % This is the data I should be using
 rawTimeCombined = [rawTimeTeeMat';rawTimeBPMat';rawTimeCannonMat';rawTimeLiveMat']; % array of data to test, (p*c)*1001
 modeVec = [zeros(numel(subjectNames),1); ones(numel(subjectNames),1); ones(numel(subjectNames),1)*2; ones(numel(subjectNames),1)*3]; % Label each group (p*c)*1
-subVec = [[1:numel(subjectNames)]'; [1:numel(subjectNames)]'; [1:numel(subjectNames)]'; [1:numel(subjectNames)]']; % Label by subjec (p*c)*1
+subVec = [[1:numel(subjectNames)]'; [1:numel(subjectNames)]'; [1:numel(subjectNames)]'; [1:numel(subjectNames)]']; % Label by subject (p*c)*1
 
 % Conduct normality test:
 alpha = 0.05;
@@ -643,6 +655,35 @@ saveas(f, strcat(path, fileName), 'png');
 % spm1d.plot.plot_mean_sd(Y0, linecolor='b', facecolor=(0.7,0.7,1), edgecolor='b', label='Slow')
 % spm1d.plot.plot_mean_sd(Y1, label='Normal')
 % spm1d.plot.plot_mean_sd(Y2, linecolor='r', facecolor=(1,0.7,0.7), edgecolor='r', label='Fast')
+
+% Create a vector, 1x6, for the number of MC tests. Give each index a value
+% of 0 or 1, depending on if it crossed the threshold (approached a certain percentage of the critical value)
+thresholdPercent = 0.8; % Within 20% of the critical value
+% Put the subplot handles in a vector for indexing in the loop
+subplotMCHandles = {s1; s2; s3; s4; s5; s6};
+[numRows, ~] = size(subplotMCHandles);
+
+for i = 1:numRows
+    % If the SPM{t} value is within n% of the critical value at some point,
+    % give it a score of 1, if not, it gets a zero
+    if any(subplotMCHandles{i}(1).YData > thresholdPercent*subplotMCHandles{i}(3).YData(1)) || any(subplotMCHandles{i}(1).YData < thresholdPercent*subplotMCHandles{i}(4).YData(1)) % Crosses the threshold
+        mcLogicalOutput(1,i) = true;
+    else % Never crosses the threshold
+        mcLogicalOutput(1,i) = false;
+    end
+end
+
+% Get the first open row, put the data in the next one
+outPath = 'C:\Users\SSL-Grad\OneDrive\Documents\College\SSL Research Docs\Thesis Work Paper\';
+outFile = 'SummaryTable.xlsx';
+outPathAndFile = strcat(outPath, outFile);
+inFile = readcell(outPathAndFile);
+[numEntries,~] = size(inFile);
+outRow = numEntries+1;
+xlCellFirst = xlRC2A1(outRow,1);
+xlCellSecond = xlRC2A1(outRow,6);
+% Write this data to an excel sheet
+writematrix(mcLogicalOutput,outPathAndFile, 'Range', strcat(xlCellFirst,':',xlCellSecond));
 
 %% Output necessary data to Excel and diplay the data here
 % Put index scores into a single

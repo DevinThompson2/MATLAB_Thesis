@@ -8,7 +8,11 @@ function [avgData, stdeData, percentEvents, interpolatedData] = normalize_To_Tim
 
 
 events = {'Stance','Foot Up','Load','First Hand Movement','Foot Down','Impact','Follow Through'};
+
+% Comment and uncomment the trimmed events to change the range
+
 trimmedEvents = {'Foot Up','Load','First Hand Movement','Foot Down','Impact'};
+%trimmedEvents = {'First Hand Movement','Foot Down','Impact'};
 eventVarNames = {'stance','footUp','load','firstMove','footDown','impact','followThrough'};
 hz = 500; % Sampling frequency
 
@@ -25,12 +29,15 @@ for i = 1:length(normEventMats)
 end
 
 % Get indices to extract data from for each trial
-% Find indices of foot-up and impact
-% Normalize the events from foot-up to impact as a percentage of the swing
+% Find indices of foot-up and impact - For thesis
+% THE FIRST EVENT IS CHANGING, NOT FOOT_UP ANYMORE, PROBABLY GOING TO USE
+% FIRST HAND MOVEMENT
+% Normalize the events from 'event' to impact as a percentage of the swing
 % in this function as well 
 [eventIndices, percentEvents] = get_Event_Indices(roundEventMats, eventVarNames, rawTime);
 
-% Extract the data for each trial
+% Extract the data for each trial - Not necessarily foot_up despite what
+% the function name says
 footUpToImpactData = extract_Footup_To_Impact(eventIndices, signalData);
 
 % Create vectors for each trial, all need to be the same size and not
@@ -112,7 +119,7 @@ if graph == 1;
     ax= gca;
     ax.FontSize = subLabelSize;
     ax.FontWeight = 'bold';
-    xLineFootUp = ax.Children(5);
+    xLineFootUp = ax.Children(3);
     xLineFootUp.LabelHorizontalAlignment = "right";
     xLineImpact = ax.Children(1);
     xLineImpact.LabelHorizontalAlignment = "left";

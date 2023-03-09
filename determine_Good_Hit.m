@@ -25,7 +25,7 @@ end
 %    combinedData{i,1}(:,3) = sprayAngle{i,1};
 % end
 
-% Calculate the percentage of swings that result in a "good" hit ball -15,
+% Calculate the percentage of swings that result in a "good" hit ball -10,
 % +35
 % deg LA, fair ball (+-45 deg)
 [contactRateSubject, contactRateMethodAvg, contactRateMethodStde] = get_Good_Hits(launchAngle, sprayAngle, filenames);
