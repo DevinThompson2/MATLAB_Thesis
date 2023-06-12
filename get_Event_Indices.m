@@ -3,7 +3,8 @@ function [indices, normEvents] = get_Event_Indices(events, eventNames, timeData)
 %   Detailed explanation goes here
 
 impactIndex = find(strcmp(eventNames, "impact")); % Change these values to change the normalization range
-footUpIndex = find(strcmp(eventNames, "footUp")); % Change these values to change the normalization range
+footUpIndex = find(strcmp(eventNames, "footUp")); % foot up
+%footUpIndex = find(strcmp(eventNames, "firstMove")); % first hand movement
 
 % Get the footUp and Impact times (all impact should be zero)
 for i = 1:length(events)

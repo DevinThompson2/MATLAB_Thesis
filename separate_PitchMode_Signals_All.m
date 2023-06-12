@@ -128,9 +128,9 @@ dataMat = {teeMat; bpMat; cannonMat; liveMat};
 % NORMALIZE THE DATA AS DISCUSSED HERE
 graph1 = 1;
 graph0 = 0;
-[avgPercent, stdePercent, percentEvents, outPercent] = normalize_To_Live(dataMat,allEventsMat, trimmedGraphingIndices, pitchInfo, signalName, graphName, subjectName, unit2, graph1);
-[avgSubtract, stdeSubtract, ~, outSubtract] = normalize_To_Live_Subtract(dataMat,allEventsMat, trimmedGraphingIndices, pitchInfo, signalName, graphName, subjectName, unit1, graph1);
-[avgRaw, stdeRaw, ~, outRawTime] = normalize_To_Time_Raw(dataMat,allEventsMat, trimmedGraphingIndices, pitchInfo, signalName, graphName, subjectName,unit1, graph1);
+[avgPercent, stdePercent, percentEvents, outPercent] = normalize_To_Live(dataMat,allEventsMat, trimmedGraphingIndices, pitchInfo, signalName, graphName, subjectName, unit2, graph0);
+[avgSubtract, stdeSubtract, ~, outSubtract] = normalize_To_Live_Subtract(dataMat,allEventsMat, trimmedGraphingIndices, pitchInfo, signalName, graphName, subjectName, unit1, graph0);
+[avgRaw, stdeRaw, ~, outRawTime] = normalize_To_Time_Raw(dataMat,allEventsMat, trimmedGraphingIndices, pitchInfo, signalName, graphName, subjectName,unit1, graph0);
 
 outRaw = dataMat;
 

@@ -114,22 +114,22 @@ signalNames = fieldnames(signalData.(subjects{1}).SignalData);
 signalVariableNames = create_variable_names(3)
 %set(groot,'defaultAxesFontSize',25)
 
-[leadElbowFlexTee, leadElbowFlexBP, leadElbowFlexCannon, leadElbowFlexLive] = process_Signal(signalData, subjects, 'leadElbowAngles',signalVariableNames, subjectTables, 1);
-close all
-[leadElbowFlexVelTee, leadElbowFlexVelBP, leadElbowFlexVelCannon, leadElbowFlexVelLive] = process_Signal(signalData, subjects, 'leadElbowVel', signalVariableNames, subjectTables, 2);
-close all
-[leadKneeFlexTee, leadKneeFlexBP, leadKneeFlexCannon, leadKneeFlexLive] = process_Signal(signalData, subjects, 'leadKneeAngles', signalVariableNames, subjectTables, 1);
-close all
-[leadKneeFlexVelTee, leadKneeFlexVelBP, leadKneeFlexVelCannon, leadKneeFlexVelLive] = process_Signal(signalData, subjects, 'leadKneeVel', signalVariableNames, subjectTables, 2);
-close all
-[rearElbowFlexTee, rearElbowFlexBP, rearElbowFlexCannon, rearElbowFlexLive] = process_Signal(signalData, subjects, 'rearElbowAngles', signalVariableNames, subjectTables, 1);
-close all
-[rearElbowFlexVelTee, rearElbowFlexVelBP, rearElbowFlexVelCannon, rearElbowFlexVelLive] = process_Signal(signalData, subjects, 'rearElbowVel', signalVariableNames, subjectTables, 2);
-close all
-[rearKneeFlexTee, rearKneeFlexBP, rearKneeFlexCannon, rearKneeFlexLive] = process_Signal(signalData, subjects, 'rearKneeAngles', signalVariableNames, subjectTables, 1);
-close all
-[rearKneeFlexVelTee, rearKneeFlexVelBP, rearKneeFlexVelCannon, rearKneeFlexVelLive] = process_Signal(signalData, subjects, 'rearKneeVel', signalVariableNames, subjectTables, 2);
-close all
+%[leadElbowFlexTee, leadElbowFlexBP, leadElbowFlexCannon, leadElbowFlexLive] = process_Signal(signalData, subjects, 'leadElbowAngles',signalVariableNames, subjectTables, 1);
+%close all
+% [leadElbowFlexVelTee, leadElbowFlexVelBP, leadElbowFlexVelCannon, leadElbowFlexVelLive] = process_Signal(signalData, subjects, 'leadElbowVel', signalVariableNames, subjectTables, 2);
+% close all
+% [leadKneeFlexTee, leadKneeFlexBP, leadKneeFlexCannon, leadKneeFlexLive] = process_Signal(signalData, subjects, 'leadKneeAngles', signalVariableNames, subjectTables, 1);
+% close all
+% [leadKneeFlexVelTee, leadKneeFlexVelBP, leadKneeFlexVelCannon, leadKneeFlexVelLive] = process_Signal(signalData, subjects, 'leadKneeVel', signalVariableNames, subjectTables, 2);
+% close all
+% [rearElbowFlexTee, rearElbowFlexBP, rearElbowFlexCannon, rearElbowFlexLive] = process_Signal(signalData, subjects, 'rearElbowAngles', signalVariableNames, subjectTables, 1);
+% close all
+% [rearElbowFlexVelTee, rearElbowFlexVelBP, rearElbowFlexVelCannon, rearElbowFlexVelLive] = process_Signal(signalData, subjects, 'rearElbowVel', signalVariableNames, subjectTables, 2);
+% close all
+% [rearKneeFlexTee, rearKneeFlexBP, rearKneeFlexCannon, rearKneeFlexLive] = process_Signal(signalData, subjects, 'rearKneeAngles', signalVariableNames, subjectTables, 1);
+% close all
+% [rearKneeFlexVelTee, rearKneeFlexVelBP, rearKneeFlexVelCannon, rearKneeFlexVelLive] = process_Signal(signalData, subjects, 'rearKneeVel', signalVariableNames, subjectTables, 2);
+% close all
 % [batSSVelTee, batSSVelBP, batSSVelCannon, batSSVelLive] = process_Signal(signalData, subjects, 'batSSVel', signalVariableNames, subjectTables, 3);
 % close all
 % %[batSSAccTee, batSSAccBP, batSSAccCannon, batSSAccLive] = process_Signal(signalData, subjects, 'batSSAcc', signalVariableNames, subjectTables, 4);
@@ -138,21 +138,21 @@ close all
 % close all
 % %[batECAPAccTee, batECAPAccBP, batECAPAccCannon, batECAPAccLive] = process_Signal(signalData, subjects, 'batECAPAcc', signalVariableNames, subjectTables, 4);
 % %close all
-%[batKETee, batKEBP, batKECannon, batKELive] = process_Signal(signalData, subjects, 'batKEFilt', signalVariableNames, subjectTables, 5);
-%close all
+% [batKETee, batKEBP, batKECannon, batKELive] = process_Signal(signalData, subjects, 'batKEFilt', signalVariableNames, subjectTables, 5);
+% close all
 %[batPowerTee, batPowerBP, batPowerCannon, batPowerLive] = process_Signal(signalData, subjects, 'batPowerFilt', signalVariableNames, subjectTables, 6);
 % close all
 % % %[headFlexTee, headFlexBP, headFlexCannon, headFlexLive] = process_Signal(signalData, subjects, 'headFlexion', signalVariableNames, subjectTables, 1); % Ran into an error, sub 6
 % % %[headLatFlexTee, headLatFlexBP, headLatFlexCannon, headLatFlexLive] = process_Signal(signalData, subjects, 'headLateralFlexion', signalVariableNames, subjectTables, 1); % Ran into an error, sub 6
 % % %[headRotTee, headRotBP, headRotCannon, headRotLive] = process_Signal(signalData, subjects, 'headRotation', signalVariableNames, subjectTables, 1); % Ran into an error, sub 6
-[hipRotTee, hipRotBP, hipRotCannon, hipRotLive] = process_Signal(signalData, subjects, 'hipRotation', signalVariableNames, subjectTables, 1);
-close all
-[hipRotVelTee, hipRotVelBP, hipRotVelCannon, hipRotVelLive] = process_Signal(signalData, subjects, 'hipRotationVel', signalVariableNames, subjectTables, 2);
-close all
-[trunkRotTee, trunkRotBP, trunkRotCannon, trunkRotLive] = process_Signal(signalData, subjects, 'trunkRotation', signalVariableNames, subjectTables, 1);
-close all
-[trunkRotVelTee, trunkRotVellBP, trunkRotVelCannon, trunkRotVelLive] = process_Signal(signalData, subjects, 'trunkRotationVel', signalVariableNames, subjectTables, 2);
-close all
+% [hipRotTee, hipRotBP, hipRotCannon, hipRotLive] = process_Signal(signalData, subjects, 'hipRotation', signalVariableNames, subjectTables, 1);
+% close all
+% [hipRotVelTee, hipRotVelBP, hipRotVelCannon, hipRotVelLive] = process_Signal(signalData, subjects, 'hipRotationVel', signalVariableNames, subjectTables, 2);
+% close all
+% [trunkRotTee, trunkRotBP, trunkRotCannon, trunkRotLive] = process_Signal(signalData, subjects, 'trunkRotation', signalVariableNames, subjectTables, 1);
+% close all
+% [trunkRotVelTee, trunkRotVellBP, trunkRotVelCannon, trunkRotVelLive] = process_Signal(signalData, subjects, 'trunkRotationVel', signalVariableNames, subjectTables, 2);
+% close all
 % [leadArmAngVelTee, leadArmAngVelBP, leadArmAngVelCannon, leadArmAngVelLive] = process_Signal(signalData, subjects, 'leadArmAngVel', signalVariableNames, subjectTables, 2);
 % close all
 % [leadHandAngVelTee, leadHandAngVelBP, leadHandAngVelCannon, leadHandAngVelLive] = process_Signal(signalData, subjects, 'leadHandAngVel', signalVariableNames, subjectTables, 2);
@@ -208,7 +208,7 @@ eventVariableNames = create_variable_names(2);
 % [avgPV, stdePV] = plot_pitchVel(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables,'pitchVel',eventVariableNames);
 % [avgBEV, stdeBEV] = plot_BEV(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables,'exitVel',eventVariableNames);
 % [avgSwingAcc, stdeSwingAcc] = plot_SwingAcc(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables,'swingAcc',eventVariableNames);
-% [avgSwingTime, stdeTime] = plot_swingTime(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables,'swingTimeHand',eventVariableNames);
+% [avgSwingTime, stdeTime] = plot_swingTime(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables,'swingTimeFootUp',eventVariableNames);
 % [avgBatKE, stdeBatKE] = plot_batKE(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables,'maxBatKEFilt',eventVariableNames);
 % [avgBatPower, stdeBatPower] = plot_batPower(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables,'maxBatPowerFilt',eventVariableNames);
 % plot_impactLocation(finalTeeTables, finalBPTables,finalCannonTables,finalLiveTables, 'impactLocECAP', eventVariableNames)

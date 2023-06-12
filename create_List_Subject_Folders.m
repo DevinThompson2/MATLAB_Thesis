@@ -3,7 +3,7 @@ function [goodFolders] = create_List_Subject_Folders(dirStruct)
 
 % Determine which folders to use to get the data from
 [rows, cols] = size(dirStruct);
-% Loop over all fields in the struck, only store folders that contain the
+% Loop over all fields in the struct, only store folders that contain the
 % name "Subject"
 count = 1;
 for i = 1:rows

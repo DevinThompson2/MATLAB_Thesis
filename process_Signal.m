@@ -8,10 +8,10 @@ events = {'Stance','Foot Up','Load','First Hand Movement','Foot Down','Impact','
 
 % Comment and uncomment the trimmed events to change the range
 
-trimmedEvents = {'Foot Up','Load','First Hand Movement','Foot Down','Impact'};
-%trimmedEvents = {'First Hand Movement','Foot Down','Impact'};
+trimmedEvents = {'FU','Load','FHM','FD','Impact'};
+%trimmedEvents = {'FHM','FD','Impact'};
 hz = 500; % hz
-pitchInfo = [-1.97 -1.56 -1.18 -.73 -.54]; % s
+pitchInfo = [-1.97 -1.56 -1.18 -.73 -.54]; % savgRaw
 
 % Graphing variable names, find graphing names equivalent to variable name
 graphIndex = find(varGraphNames == signalName);
@@ -483,6 +483,7 @@ saveas(f, strcat(path, fileName), 'png');
 %Y = [teeMat';bpMat';cannonMat';liveMat']; % array of data to test
 %Y0 = rawTimeTeeMat';
 %Y1 = rawTimeLiveMat';
+
 % This is the data I should be using
 rawTimeCombined = [rawTimeTeeMat';rawTimeBPMat';rawTimeCannonMat';rawTimeLiveMat']; % array of data to test, (p*c)*1001
 modeVec = [zeros(numel(subjectNames),1); ones(numel(subjectNames),1); ones(numel(subjectNames),1)*2; ones(numel(subjectNames),1)*3]; % Label each group (p*c)*1
@@ -577,6 +578,58 @@ fileName = strcat(signalName,"_RawNormTime_Stats");
 savefig(f, strcat(path, fileName));
 saveas(f, strcat(path, fileName), 'png');
 
+% Get the x-values where differences occur - as a % of the swing (from the last figure)
+axObs = f.Children;
+dataObs = axObs.Children;
+% Needs to be robust for potentially multiple areas where the threshold is
+% crossed
+% Calculate the number of times this happens, this will be the number of
+% 'patch' types in the data
+count = 0;
+index = 0;
+for i = 1:length(dataObs)
+    if dataObs(i).Type == "patch"
+        count = count + 1;
+        index(count,1) = i;   
+    end
+end
+
+% Extract the data from this figure
+for i = 1:count
+    rangeSigDifference{i,1} = dataObs(index(i)).XData;
+    xVerts{i,1} = [dataObs(index(i)).XData(1) dataObs(index(i)).XData(end)];
+end
+
+
+% Add the areas where significant differences were observed to the original
+% plot
+figure((f.Number)-2)
+ax = gca;
+%yVerts = ax.YLim;
+yVerts = 0.25*(ax.YLim(2) - ax.YLim(1)) + ax.YLim(1);
+hold on
+for i = 1:count
+%     x = [xVerts{i}(1) xVerts{i}(2) xVerts{i}(2) xVerts{i}(1)];
+%     y = [yVerts(1) yVerts(1) yVerts(2) yVerts(2)];
+%     patch(x,y,'c', 'FaceAlpha', 0.1, 'EdgeColor','c','EdgeAlpha',0.1)
+    x = [xVerts{i}(1) xVerts{i}(2)];
+    y = [yVerts(1) yVerts(1)];
+    lh = line(x,y, 'Color','c','LineWidth', 10);
+    lh.Color = [lh.Color 0.75];
+end
+
+% Fix the legend
+ax.Legend.String = ax.Legend.String(1:4);
+
+% Save the figure
+f = gcf;
+f.WindowState = 'maximized';
+path = "Z:\SSL\Research\Graduate Students\Thompson, Devin\Thesis Docs\Pitch Modality (RIP)\Thesis\Pics and Videos\Results Figs\Signals\";
+fileName = strcat(signalName,"_RawNormTimeSigDiff_Total");
+savefig(f, strcat(path, fileName));
+saveas(f, strcat(path, fileName), 'png');
+
+
 % If there are significant differences, need to do post-hoc comparisons,
 % can do it on all, only report results from ones with differences
 % separate into groups:
@@ -604,8 +657,11 @@ t24i = t24.inference(p_critical, 'two_tailed',true);
 t34i = t34.inference(p_critical, 'two_tailed',true);
 
 % Plot comparisons
-f = gcf;
-figure((f.Number)+1)
+% Get largest figure number
+h =  findobj('type','figure');
+n = length(h);
+%f = gcf;
+figure(n+1)
 sgt = sgtitle(strcat("MC: ", graphName));
 sgt.FontSize = subLabelSize;
 sgt.FontWeight = 'bold';
@@ -658,7 +714,9 @@ saveas(f, strcat(path, fileName), 'png');
 
 % Create a vector, 1x6, for the number of MC tests. Give each index a value
 % of 0 or 1, depending on if it crossed the threshold (approached a certain percentage of the critical value)
-thresholdPercent = 0.8; % Within 20% of the critical value
+
+% thresholdPercent = 0.8; % Within 20% of the critical value
+thresholdPercent = 1.0; % At the threshold
 % Put the subplot handles in a vector for indexing in the loop
 subplotMCHandles = {s1; s2; s3; s4; s5; s6};
 [numRows, ~] = size(subplotMCHandles);
@@ -673,17 +731,17 @@ for i = 1:numRows
     end
 end
 
-% Get the first open row, put the data in the next one
-outPath = 'C:\Users\SSL-Grad\OneDrive\Documents\College\SSL Research Docs\Thesis Work Paper\';
-outFile = 'SummaryTable.xlsx';
-outPathAndFile = strcat(outPath, outFile);
-inFile = readcell(outPathAndFile);
-[numEntries,~] = size(inFile);
-outRow = numEntries+1;
-xlCellFirst = xlRC2A1(outRow,1);
-xlCellSecond = xlRC2A1(outRow,6);
-% Write this data to an excel sheet
-writematrix(mcLogicalOutput,outPathAndFile, 'Range', strcat(xlCellFirst,':',xlCellSecond));
+% % Get the first open row, put the data in the next one
+% outPath = 'C:\Users\SSL-Grad\OneDrive\Documents\College\SSL Research Docs\Thesis Work Paper\';
+% outFile = 'SummaryTable.xlsx';
+% outPathAndFile = strcat(outPath, outFile);
+% inFile = readcell(outPathAndFile, 'Sheet', '100%');
+% [numEntries,~] = size(inFile);
+% outRow = numEntries+1;
+% xlCellFirst = xlRC2A1(outRow,1);
+% xlCellSecond = xlRC2A1(outRow,6);
+% % Write this data to an excel sheet
+% writematrix(mcLogicalOutput,outPathAndFile,'Sheet','100%','Range', strcat(xlCellFirst,':',xlCellSecond));
 
 %% Output necessary data to Excel and diplay the data here
 % Put index scores into a single

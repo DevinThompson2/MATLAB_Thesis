@@ -6,6 +6,7 @@ function [outputAvg,outputStde, normOutputAvg, normOutputStde, normToLiveAvg, no
 filenames = subjectData.SignalData.FILE_NAME;
 signal = subjectData.SignalData.(signalName);
 hz = 500;
+
 events = {'Stance','Foot Up','Load','First Hand Movement','Foot Down','Impact','Follow Through'};
 eventVarNames = {'stance','footUp','load','firstMove','footDown','impact','followThrough'};
 
@@ -235,7 +236,7 @@ scores = [teeScore; bpScore; cannonScore; liveScore];
 
 %% Plots for each subject - may or may not use these
 % Plot the timeseries data for each method for each subject
-usePlot = 1;
+usePlot = 0;
 if usePlot == 1
     % Path for plots
     path = "Z:\SSL\Research\Graduate Students\Thompson, Devin\Thesis Docs\Pitch Modality (RIP)\Thesis\Pics and Videos\Results Figs\Signals\";
