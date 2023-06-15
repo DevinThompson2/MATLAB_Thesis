@@ -4,8 +4,7 @@
 % Date: 3/17/2021
 
 % Script to load in saved matfiles, generate figures, and perform
-% statistical analysis on the data - No statistical analysis as I don't
-% have a large enough data set
+% statistical analysis on the data 
 
 
 %% Close clear workspace/command window
