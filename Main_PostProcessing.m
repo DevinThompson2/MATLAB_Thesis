@@ -4,14 +4,17 @@
 % Date: 3/17/2021
 
 % Script to load in saved matfiles, generate figures, and perform
-% statistical analysis on the data - No statistical analysis as I don't
-% have a large enough data set
+% statistical analysis on the data 
 
 
 %% Close clear workspace/command window
 close all
 clear all
 clc
+
+% Set the default figure font
+% set(groot, 'defaultAxesFontName', 'Arial');
+% set(groot,'defaultAxesFontSize',20)
 %% Load the files and put them into structures for each subject
 % Set the name of the folder where output data is stored
 outputPathName = "Z:/SSL/Research/Graduate Students/Thompson, Devin/C-Motion/PitchModality/OutputData/";
@@ -44,6 +47,7 @@ tableTypes = {'Tee';'BP';'Cannon';'Live'};
 % Convert all of the cells to matrices
 convPlayerData = convert_Data(playerData, subjects, phases, metrics);
 
+
 % Create tables for each player
 for i = 1:length(subjects)
     %i
@@ -58,6 +62,28 @@ for i = 1:length(subjects)
 end
 
 pitchModeTables = {teeTables; bpTables; cannonTables; liveTables};
+% Calculate the collision efficiency (Ea) and add it to the tables
+[pitchModeTables] = calculate_CollisionEfficiency(pitchModeTables); % Collision Efficiency
+
+% Determine good pitches
+% (Launch angle and spray angle)
+[contactRateSubject, contactRateMethodAvg, contactRateMethodStde, pitchModeTables] = determine_Good_Hit(convPlayerData, subjects, pitchModeTables);
+teeTables = pitchModeTables{1};
+bpTables = pitchModeTables{2};
+cannonTables = pitchModeTables{3};
+liveTables = pitchModeTables{4};
+
+% Calculate the bat acceleration, from peak bat velocity and swing time
+[pitchModeTables] = calculate_SwingAcc(pitchModeTables); % Swing Acceleration
+teeTables = pitchModeTables{1};
+bpTables = pitchModeTables{2};
+cannonTables = pitchModeTables{3};
+liveTables = pitchModeTables{4};
+
+% Need to add Ea to the metrics table
+metrics{1}{end+1,1} = 'Ea';
+metrics{1}{end+1,1} = 'goodHitIndex';
+metrics{1}{end+1,1} = 'swingAcc';
 
 % Compute averages for each each participant for each table
 averageTables = average_All_Tables(pitchModeTables, tableTypes, length(subjects), length(phases)); 
@@ -79,48 +105,68 @@ averageTables = average_All_Tables(pitchModeTables, tableTypes, length(subjects)
 % end
 
 %% Compute the pitch location
-%pitchLocation = calculate_Pitch_Location(signalData, subjects);
-
-%% Determine good pitches
-% (Launch angle and spray angle)
-% out = determine_Good_Hit(convPlayerData, subjects);
+calculate_Pitch_Location(signalData, subjects);
 
 %% Process the signal data to create plots
 % Get the names of the signals
 signalNames = fieldnames(signalData.(subjects{1}).SignalData);
 signalVariableNames = create_variable_names(3)
+%set(groot,'defaultAxesFontSize',25)
 
-% [avg1, stde1] = process_Signal(signalData, subjects, 'leadElbowAngles', subjectTables, 1);
-% [avg1, stde1] = process_Signal(signalData, subjects, 'leadElbowVel', subjectTables, 2);
-% [avg1, stde1] = process_Signal(signalData, subjects, 'leadKneeAngles', subjectTables, 1);
-% [avg1, stde1] = process_Signal(signalData, subjects, 'leadKneeVel', subjectTables, 2);
-% [avg1, stde1] = process_Signal(signalData, subjects, 'rearElbowAngles', subjectTables, 1);
-% [avg1, stde1] = process_Signal(signalData, subjects, 'rearElbowVel', subjectTables, 2);
-% [avg1, stde1] = process_Signal(signalData, subjects, 'rearKneeAngles', subjectTables, 1);
-% [avg1, stde1] = process_Signal(signalData, subjects, 'rearKneeVel', subjectTables, 2);
-% [avg1, stde1] = process_Signal(signalData, subjects, 'batSSVel', subjectTables, 3);
-% [avg1, stde1] = process_Signal(signalData, subjects, 'batSSAcc', subjectTables, 4);
-% [avg2, stde2] = process_Signal(signalData, subjects, 'batECAPVel', subjectTables, 3);
-% [avg2, stde2] = process_Signal(signalData, subjects, 'batECAPAcc', subjectTables, 4);
-% [avg1, stde1] = process_Signal(signalData, subjects, 'headFlexion', subjectTables, 1);
-% [avg1, stde1] = process_Signal(signalData, subjects, 'headLateralFlexion', subjectTables, 1);
-% [avg1, stde1] = process_Signal(signalData, subjects, 'headRotation', subjectTables, 1);
-% [hipRotTee, hipRotBP, hipRotCannon, hipRotLive] = process_Signal(signalData, subjects, 'hipRotation', subjectTables, 1);
-% [hipRotVelTee, hipRotVelBP, hipRotVelCannon, hipRotVelLive] = process_Signal(signalData, subjects, 'hipRotationVel', subjectTables, 2);
-[trunkRotTee, trunkRotBP, trunkRotCannon, trunkRotLive] = process_Signal(signalData, subjects, 'trunkRotation', subjectTables, 1);
-% [trunkRotVelTee, trunkRotVellBP, trunkRotVelCannon, trunkRotVelLive] = process_Signal(signalData, subjects, 'trunkRotationVel', subjectTables, 2);
-% [avg2, stde2] = process_Signal(signalData, subjects, 'leadArmAngVel', subjectTables, 2);
-% [avg2, stde2] = process_Signal(signalData, subjects, 'leadHandAngVel', subjectTables, 2);
-% [avg2, stde2] = process_Signal(signalData, subjects, 'leadWristAcc', subjectTables, 4);
-% [avg2, stde2] = process_Signal(signalData, subjects, 'leadWristVel', subjectTables, 3);
-% [avg2, stde2] = process_Signal(signalData, subjects, 'batAngVel', subjectTables, 2);
-% [avg2, stde2] = process_Signal(signalData, subjects, 'rearShoulderAbduction', subjectTables, 1);
-% [avg2, stde2] = process_Signal(signalData, subjects, 'trunkFlexion', subjectTables, 1);
-% [avg2, stde2] = process_Signal(signalData, subjects, 'trunkLateralFlexion', subjectTables, 1);
+%[leadElbowFlexTee, leadElbowFlexBP, leadElbowFlexCannon, leadElbowFlexLive] = process_Signal(signalData, subjects, 'leadElbowAngles',signalVariableNames, subjectTables, 1);
+%close all
+% [leadElbowFlexVelTee, leadElbowFlexVelBP, leadElbowFlexVelCannon, leadElbowFlexVelLive] = process_Signal(signalData, subjects, 'leadElbowVel', signalVariableNames, subjectTables, 2);
+% close all
+% [leadKneeFlexTee, leadKneeFlexBP, leadKneeFlexCannon, leadKneeFlexLive] = process_Signal(signalData, subjects, 'leadKneeAngles', signalVariableNames, subjectTables, 1);
+% close all
+% [leadKneeFlexVelTee, leadKneeFlexVelBP, leadKneeFlexVelCannon, leadKneeFlexVelLive] = process_Signal(signalData, subjects, 'leadKneeVel', signalVariableNames, subjectTables, 2);
+% close all
+% [rearElbowFlexTee, rearElbowFlexBP, rearElbowFlexCannon, rearElbowFlexLive] = process_Signal(signalData, subjects, 'rearElbowAngles', signalVariableNames, subjectTables, 1);
+% close all
+% [rearElbowFlexVelTee, rearElbowFlexVelBP, rearElbowFlexVelCannon, rearElbowFlexVelLive] = process_Signal(signalData, subjects, 'rearElbowVel', signalVariableNames, subjectTables, 2);
+% close all
+% [rearKneeFlexTee, rearKneeFlexBP, rearKneeFlexCannon, rearKneeFlexLive] = process_Signal(signalData, subjects, 'rearKneeAngles', signalVariableNames, subjectTables, 1);
+% close all
+% [rearKneeFlexVelTee, rearKneeFlexVelBP, rearKneeFlexVelCannon, rearKneeFlexVelLive] = process_Signal(signalData, subjects, 'rearKneeVel', signalVariableNames, subjectTables, 2);
+% close all
+% [batSSVelTee, batSSVelBP, batSSVelCannon, batSSVelLive] = process_Signal(signalData, subjects, 'batSSVel', signalVariableNames, subjectTables, 3);
+% close all
+% %[batSSAccTee, batSSAccBP, batSSAccCannon, batSSAccLive] = process_Signal(signalData, subjects, 'batSSAcc', signalVariableNames, subjectTables, 4);
+% %close all
+% [batECAPVelTee, batECAPVelBP, batECAPVelCannon, batECAPVelLive] = process_Signal(signalData, subjects, 'batECAPVel', signalVariableNames, subjectTables, 3);
+% close all
+% %[batECAPAccTee, batECAPAccBP, batECAPAccCannon, batECAPAccLive] = process_Signal(signalData, subjects, 'batECAPAcc', signalVariableNames, subjectTables, 4);
+% %close all
+% [batKETee, batKEBP, batKECannon, batKELive] = process_Signal(signalData, subjects, 'batKEFilt', signalVariableNames, subjectTables, 5);
+% close all
+%[batPowerTee, batPowerBP, batPowerCannon, batPowerLive] = process_Signal(signalData, subjects, 'batPowerFilt', signalVariableNames, subjectTables, 6);
+% close all
+% % %[headFlexTee, headFlexBP, headFlexCannon, headFlexLive] = process_Signal(signalData, subjects, 'headFlexion', signalVariableNames, subjectTables, 1); % Ran into an error, sub 6
+% % %[headLatFlexTee, headLatFlexBP, headLatFlexCannon, headLatFlexLive] = process_Signal(signalData, subjects, 'headLateralFlexion', signalVariableNames, subjectTables, 1); % Ran into an error, sub 6
+% % %[headRotTee, headRotBP, headRotCannon, headRotLive] = process_Signal(signalData, subjects, 'headRotation', signalVariableNames, subjectTables, 1); % Ran into an error, sub 6
+% [hipRotTee, hipRotBP, hipRotCannon, hipRotLive] = process_Signal(signalData, subjects, 'hipRotation', signalVariableNames, subjectTables, 1);
+% close all
+% [hipRotVelTee, hipRotVelBP, hipRotVelCannon, hipRotVelLive] = process_Signal(signalData, subjects, 'hipRotationVel', signalVariableNames, subjectTables, 2);
+% close all
+% [trunkRotTee, trunkRotBP, trunkRotCannon, trunkRotLive] = process_Signal(signalData, subjects, 'trunkRotation', signalVariableNames, subjectTables, 1);
+% close all
+% [trunkRotVelTee, trunkRotVellBP, trunkRotVelCannon, trunkRotVelLive] = process_Signal(signalData, subjects, 'trunkRotationVel', signalVariableNames, subjectTables, 2);
+% close all
+% [leadArmAngVelTee, leadArmAngVelBP, leadArmAngVelCannon, leadArmAngVelLive] = process_Signal(signalData, subjects, 'leadArmAngVel', signalVariableNames, subjectTables, 2);
+% close all
+% [leadHandAngVelTee, leadHandAngVelBP, leadHandAngVelCannon, leadHandAngVelLive] = process_Signal(signalData, subjects, 'leadHandAngVel', signalVariableNames, subjectTables, 2);
+% close all
+% % %[avg2, stde2] = process_Signal(signalData, subjects, 'leadWristAcc', signalVariableNames, subjectTables, 4);
+% % %[avg2, stde2] = process_Signal(signalData, subjects, 'leadWristVel', signalVariableNames, subjectTables, 3);
+% [batAngVelTee, batAngVelBP, batAngVelCannon, batAngVelLive] = process_Signal(signalData, subjects, 'batAngVel', signalVariableNames, subjectTables, 2);
+% close all
+% % %[rearShouldAbdTee, rearShouldAbdBP, rearShouldAbdCannon, rearShouldAbdLive] = process_Signal(signalData, subjects, 'rearShoulderAbduction', signalVariableNames, subjectTables, 1); % Ran into error, sub 6
+% % %[trunkFlexTee, trunkFlexBP, trunkFlexCannon, trunkFlexLive] = process_Signal(signalData, subjects, 'trunkFlexion', signalVariableNames, subjectTables, 1); % Ran into error, sub 6
+% % %[trunkLatFlexTee, trunkLatFlexBP, trunkLatFlexCannon, trunkLatFlexLive] = process_Signal(signalData, subjects, 'trunkLateralFlexion', signalVariableNames, subjectTables, 1); % Ran into error, sub 6
 %% Swing speed vs time from pitch release to impact (or swing time)
 
-% plot_batSpeedvsPitchTime(playerData, subjects, 'maxBatSSVel','pitchVel','SwingTime');
-% 
+% plot_batSpeedvsPitchTime(playerData, pitchModeTables, subjects, 'maxBatSSVel','pitchVel','swingTimeHand');
+
 % %% Create figures
 % %test_Plot(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables, phases, metrics);
 % % Create list of event variable names - Not using this either
@@ -154,8 +200,18 @@ signalVariableNames = create_variable_names(3)
 % 
 % 
 % %% Plot max metrics
-% eventVariableNames = create_variable_names(2)
-% plot_max_metric_linVel(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables, 'maxBatSSVel')
+set(groot,'defaultAxesFontSize',20)
+eventVariableNames = create_variable_names(2);
+
+% [avgEA, stdeEa] = plot_collisionEfficiency(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables,'Ea',eventVariableNames);
+% [avgPV, stdePV] = plot_pitchVel(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables,'pitchVel',eventVariableNames);
+% [avgBEV, stdeBEV] = plot_BEV(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables,'exitVel',eventVariableNames);
+% [avgSwingAcc, stdeSwingAcc] = plot_SwingAcc(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables,'swingAcc',eventVariableNames);
+% [avgSwingTime, stdeTime] = plot_swingTime(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables,'swingTimeFootUp',eventVariableNames);
+% [avgBatKE, stdeBatKE] = plot_batKE(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables,'maxBatKEFilt',eventVariableNames);
+% [avgBatPower, stdeBatPower] = plot_batPower(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables,'maxBatPowerFilt',eventVariableNames);
+% plot_impactLocation(finalTeeTables, finalBPTables,finalCannonTables,finalLiveTables, 'impactLocECAP', eventVariableNames)
+% plot_max_metric_linVel(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables, 'maxBatSSVel', eventVariableNames)
 % plot_max_metric_linVel(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables, 'maxBatECAPVel')
 % plot_max_metric_angle(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables, 'maxHipRotation')
 % plot_max_metric_angle(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables, 'maxTrunkRotation')
@@ -172,7 +228,7 @@ signalVariableNames = create_variable_names(3)
 % plot_max_metric_angVel(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables, 'maxRearElbowVel')
 % plot_max_metric_angVel(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables, 'maxLeadKneeVel')
 % plot_max_metric_angVel(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables, 'maxRearKneeVel')
-% plot_max_metric_angVel(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables, 'maxBatAngVel')
+% plot_max_metric_angVel(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables, 'maxBatAngVel', eventVariableNames)
 % plot_max_metric_angVel(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables, 'maxLeadArmAngVel')
 % plot_max_metric_angVel(finalTeeTables, finalBPTables, finalCannonTables, finalLiveTables, 'maxLeadHandAngVel')
 

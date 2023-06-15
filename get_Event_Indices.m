@@ -2,8 +2,9 @@ function [indices, normEvents] = get_Event_Indices(events, eventNames, timeData)
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
 
-impactIndex = find(strcmp(eventNames, "impact"));
-footUpIndex = find(strcmp(eventNames, "footUp"));
+impactIndex = find(strcmp(eventNames, "impact")); % Change these values to change the normalization range
+footUpIndex = find(strcmp(eventNames, "footUp")); % foot up
+%footUpIndex = find(strcmp(eventNames, "firstMove")); % first hand movement
 
 % Get the footUp and Impact times (all impact should be zero)
 for i = 1:length(events)
@@ -21,10 +22,14 @@ for i = 1:length(trimmedEvents)
     avgEvents{i,1} = mean(trimmedEvents{i,1}, 'omitnan');
 end
 
-% Normalize the averaged events for each pitch moded
+% Normalize the averaged events for each pitch mode, from foot-up to impact
+% (0 to 100)
 for i = 1:length(avgEvents)
-    normEvents{i,1} = ((avgEvents{i,1} - min(avgEvents{i,1})) ./ -min(avgEvents{i,1})) * 100;
+    normEvents{i,1} = ((avgEvents{i,1} - avgEvents{i,1}(1,1)) ./ -avgEvents{i,1}(1,1)) * 100;
 end
+% for i = 1:length(avgEvents)
+%     normEvents{i,1} = ((avgEvents{i,1} - min(avgEvents{i,1})) ./ -min(avgEvents{i,1})) * 100;
+% end
 
 % Get the indices of foot up to impact for all trials
 for i = 1:length(footUpTimes)

@@ -1,7 +1,11 @@
-function plot_max_metric_angVel(teeData, bpData, cannonData, liveData, metric)
+function plot_max_metric_angVel(teeData, bpData, cannonData, liveData, metric, names)
 % Input: teeData, bpData, cannonData, liveData; tables, with all data, n tables for each category
 
-pitchModes = {'Tee';'BP';'Cannon';'Live'};
+pitchModes = {'Tee';'BP';'RPM';'Live'};
+
+% Compare the metric name to the names and get the graphing name out
+nameIndex = find(metric == names);
+graphName = names(nameIndex,2);
 
 % Figure out which table to get the data from and extract table that metric
 % is in
@@ -56,12 +60,20 @@ x = 1:length(pitchModes);
 %errorbar(x, avgMat, stdeMat, 'k','linestyle','none')
 errorbar(x, avgMat, stdeMat, 'ko','MarkerFaceColor','k')
 hold off
-title(strcat(metric,' for each pitch mode'))
+% title(strcat(metric,' for each pitch mode'))
 xlim([0 5])
 set(gca,'xtickLabel',pitchModes)
 xticks(1:4)
-ylabel(strcat(metric, ' (deg/s)'))
+ylabel(strcat(graphName, " (deg/s)"))
 %legend(pitchModes, 'Location', 'bestoutside');
 print(fs, strcat(metric,'Max.png'),'-dpng','-r300');
+
+% Save the figure
+f = gcf;
+%f.WindowState = 'maximized';
+path = "Z:\SSL\Research\Graduate Students\Thompson, Devin\Thesis Docs\Pitch Modality (RIP)\Thesis\Pics and Videos\Results Figs\Max Metrics\";
+fileName = strcat(metric,"_Max");
+savefig(f, strcat(path, fileName));
+saveas(f, strcat(path, fileName), 'png');
 end
 

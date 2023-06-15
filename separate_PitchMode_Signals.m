@@ -1,4 +1,4 @@
-function [outputAvg,outputStde, normOutputAvg, normOutputStde, normToLiveAvg, normToLiveStde, avgPercent, stdePercent, percentEvents, normEventTimes, trimmedGraphingIndices, scores] = separate_PitchMode_Signals(subjectData, signalName, subjectName, eventData, signalType, pitchInfo)
+function [outputAvg,outputStde, normOutputAvg, normOutputStde, normToLiveAvg, normToLiveStde, avgPercent, stdePercent, avgSubtract, stdeSubtract, avgRaw, stdeRaw, percentEvents, normEventTimes, trimmedGraphingIndices, scores] = separate_PitchMode_Signals(subjectData, signalName, graphName, subjectName, eventData, signalType, pitchInfo)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -6,6 +6,7 @@ function [outputAvg,outputStde, normOutputAvg, normOutputStde, normToLiveAvg, no
 filenames = subjectData.SignalData.FILE_NAME;
 signal = subjectData.SignalData.(signalName);
 hz = 500;
+
 events = {'Stance','Foot Up','Load','First Hand Movement','Foot Down','Impact','Follow Through'};
 eventVarNames = {'stance','footUp','load','firstMove','footDown','impact','followThrough'};
 
@@ -83,7 +84,7 @@ if signalType == 1
     unit2 = " Normalized (deg/deg)";
     unit3 = " Normalized to Live (deg)";
 elseif signalType == 2
-    unit1 = " deg/s";
+    unit1 = " (deg/s)";
     unit2 = " Normalized ((deg/s)/(deg/s))";
     unit3 = " Normalized to Live (deg/s)";
 elseif signalType == 3
@@ -104,6 +105,14 @@ elseif signalType == 4
     bpMat = bpMat * 8052.9706513958 ; % miles/hr^2
     cannonMat = cannonMat * 8052.9706513958 ; % miles/hr^2
     liveMat = liveMat * 8052.9706513958 ; % miles/hr^2
+elseif signalType == 5
+    unit1 = " (Joules)";
+    unit2 = " Normalized (Joules/Joules)";
+    unit3 = " Normalized to Live (Joules)";
+elseif signalType == 6
+    unit1 = " (Watts)";
+    unit2 = " Normalized (Watts/Watts)";
+    unit3 = " Normalized to Live (Watts)";
 else
     error('signalType input is not correct')
 end
@@ -118,7 +127,11 @@ allEventsMat = {teeEventsArray; bpEventsArray; cannonEventsArray; liveEventsArra
 dataMat = {teeMat; bpMat; cannonMat; liveMat};
 
 % NORMALIZE THE DATA AS DISCUSSED HERE
-[avgPercent, stdePercent, percentEvents] = normalize_To_Live(dataMat,allEventsMat, trimmedGraphingIndices, pitchInfo, signalName, subjectName);
+graph = 0;
+[avgPercent, stdePercent, percentEvents,~] = normalize_To_Live(dataMat,allEventsMat, trimmedGraphingIndices, pitchInfo, signalName, graphName, subjectName, unit2, graph);
+[avgSubtract, stdeSubtract, ~,~] = normalize_To_Live_Subtract(dataMat,allEventsMat, trimmedGraphingIndices, pitchInfo, signalName, graphName, subjectName, unit1, graph);
+[avgRaw, stdeRaw, ~,~] = normalize_To_Time_Raw(dataMat,allEventsMat, trimmedGraphingIndices, pitchInfo, signalName, graphName, subjectName, unit1, graph);
+
 
 % Average the teeEvents for each trial, then subtract
 avgTeeEvents = mean(teeEventsArray,'omitnan');
@@ -223,7 +236,7 @@ scores = [teeScore; bpScore; cannonScore; liveScore];
 
 %% Plots for each subject - may or may not use these
 % Plot the timeseries data for each method for each subject
-usePlot = 1;
+usePlot = 0;
 if usePlot == 1
     % Path for plots
     path = "Z:\SSL\Research\Graduate Students\Thompson, Devin\Thesis Docs\Pitch Modality (RIP)\Thesis\Pics and Videos\Results Figs\Signals\";
@@ -255,7 +268,7 @@ if usePlot == 1
     normUpperLive = normAvgLive+normStdeLive;
     normLowerLive = normAvgLive-normStdeLive;
     normInBetweenLive = [normUpperLive; flipud(normLowerLive)]';
-    % Normalized to Live
+    % Normalized to Live by subtraction
     upperTeeLive = avgTeeLive+stdeTeeLive;
     lowerTeeLive = avgTeeLive-stdeTeeLive;
     inBetweenTeeLive = [upperTeeLive; flipud(lowerTeeLive)]';
@@ -266,16 +279,16 @@ if usePlot == 1
     lowerCannonLive = avgCannonLive-stdeCannonLive;
     inBetweenCannonLive = [upperCannonLive; flipud(lowerCannonLive)]';
     
-%     % Normalized by dividing by live
-%     upperTeeLive = avgTeeLive+stdeTeeLive;
-%     lowerTeeLive = avgTeeLive-stdeTeeLive;
-%     inBetweenTeeLive = [upperTeeLive; flipud(lowerTeeLive)]';
-%     upperBPLive = avgBPLive+stdeBPLive;
-%     lowerBPLive = avgBPLive-stdeBPLive;
-%     inBetweenBPLive = [upperBPLive; flipud(lowerBPLive)]';
-%     upperCannonLive = avgCannonLive+stdeCannonLive;
-%     lowerCannonLive = avgCannonLive-stdeCannonLive;
-%     inBetweenCannonLive = [upperCannonLive; flipud(lowerCannonLive)]';
+    % Normalized by dividing by live
+    upperTeeLive = avgTeeLive+stdeTeeLive;
+    lowerTeeLive = avgTeeLive-stdeTeeLive;
+    inBetweenTeeLive = [upperTeeLive; flipud(lowerTeeLive)]';
+    upperBPLive = avgBPLive+stdeBPLive;
+    lowerBPLive = avgBPLive-stdeBPLive;
+    inBetweenBPLive = [upperBPLive; flipud(lowerBPLive)]';
+    upperCannonLive = avgCannonLive+stdeCannonLive;
+    lowerCannonLive = avgCannonLive-stdeCannonLive;
+    inBetweenCannonLive = [upperCannonLive; flipud(lowerCannonLive)]';
     
     % Use trimmed Graphing indices for plotting
     teeGraph = trimmedGraphingIndices{1} / hz;
@@ -290,10 +303,20 @@ if usePlot == 1
     newCannonGraph = [cannonGraph; flipud(cannonGraph)];
     newLiveGraph = [liveGraph; flipud(liveGraph)];
 
+
+    labelSize = 35;
+    subLabelSize = 30;
+    subNumSize = 25;
+    xLineLabelSize = 25;
+    xLineLabelSizeRaw = 25;
+    xLinePitcher = 20;
+    boldLabel = 'bold';
+    pitchColor = [0.8500 0.3250 0.0980]	;
     % Plot everything in one plot - The non-normalized data
+    % No longer subplots, just want the raw data
     f = gcf;
     figure(f.Number+1)
-    subplot(3,1,1)
+    %subplot(3,1,1)
     hold on
     fill(newTeeGraph, inBetweenTee,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
     fill(newBPGraph, inBetweenBP,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
@@ -311,100 +334,103 @@ if usePlot == 1
     plot(bpGraph, lowerBP, 'g', 'LineWidth',.5)
     plot(cannonGraph, lowerCannon, 'b', 'LineWidth',.5)
     plot(liveGraph, lowerLive, 'k', 'LineWidth',.5)
-    xline(normTeeEvents,'r-', 'LineWidth',2)
-    xline(normBPEvents,'g-', 'LineWidth',2)
-    xline(normCannonEvents,'b-', 'LineWidth',2)
-    xline(normLiveEvents,'k-',events, 'LineWidth',2)
-    xline(pitchInfo(1),'c-','Pitcher Foot Up (est)','LineWidth',1)
-    xline(pitchInfo(2),'c-','Pitcher Knee Up (est)','LineWidth',1)
-    xline(pitchInfo(3),'c-','Pitcher Hand Separation (est)','LineWidth',1)
-    xline(pitchInfo(4),'c-','Pitcher Foot Down (est)','LineWidth',1)
-    xline(pitchInfo(5),'c-','Pitch Release (est)','LineWidth',1)
+    xline(normTeeEvents,'r-', 'LineWidth',2, 'LabelHorizontalAlignment','center','FontSize',xLineLabelSizeRaw,'FontWeight', boldLabel)
+    xline(normBPEvents,'g-', 'LineWidth',2, 'LabelHorizontalAlignment','center','FontSize',xLineLabelSizeRaw,'FontWeight', boldLabel)
+    xline(normCannonEvents,'b-', 'LineWidth',2, 'LabelHorizontalAlignment','center','FontSize',xLineLabelSizeRaw,'FontWeight', boldLabel)
+    xline(normLiveEvents,'k-',events, 'LineWidth',2, 'LabelHorizontalAlignment','center','FontSize',xLineLabelSizeRaw,'FontWeight', boldLabel)
+    xline(pitchInfo(1),'c-','Pitcher Foot Up (est)','LineWidth',1, 'LabelHorizontalAlignment','center','FontSize',xLinePitcher,'FontWeight', boldLabel,'Color',pitchColor)
+    xline(pitchInfo(2),'c-','Pitcher Knee Up (est)','LineWidth',1, 'LabelHorizontalAlignment','center','FontSize',xLinePitcher,'FontWeight', boldLabel,'Color',pitchColor)
+    xline(pitchInfo(3),'c-','Pitcher Hand Separation (est)','LineWidth',1, 'LabelHorizontalAlignment','center','FontSize',xLinePitcher,'FontWeight', boldLabel,'Color',pitchColor)
+    xline(pitchInfo(4),'c-','Pitcher Foot Down (est)','LineWidth',1, 'LabelHorizontalAlignment','center','FontSize',xLinePitcher,'FontWeight', boldLabel,'Color',pitchColor)
+    xline(pitchInfo(5),'c-','Pitch Release (est)','LineWidth',1, 'LabelHorizontalAlignment','center','FontSize',xLinePitcher,'FontWeight', boldLabel,'Color',pitchColor)
     xlim([-2 0.5])
-    legend([p1 p2 p3 p4],{'Tee','BP','Cannon','Live'},'Location','bestoutside')
-    title(strcat(signalName, ' For Each Pitch Mode: ', subjectName))
-    %xlabel('Time (s)')
-    ylabel(strcat(signalName, unit1))
-    
-    % Plot all of the normalized data
-    %f = gcf;
-    %figure(f.Number+1)\
-    subplot(3,1,2)
-    hold on
-    fill(newTeeGraph, normInBetweenTee,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
-    fill(newBPGraph, normInBetweenBP,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
-    fill(newCannonGraph, normInBetweenCannon,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
-    fill(newLiveGraph, normInBetweenLive,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
-    p1 = plot(teeGraph, normAvgTee, 'r', 'LineWidth',2);
-    p2 = plot(bpGraph, normAvgBP, 'g', 'LineWidth',2);
-    p3 = plot(cannonGraph, normAvgCannon, 'b', 'LineWidth',2);
-    p4 = plot(liveGraph, normAvgLive, 'k', 'LineWidth',2);
-    plot(teeGraph, normUpperTee, 'r', 'LineWidth',.5)
-    plot(bpGraph, normUpperBP, 'g', 'LineWidth',.5)
-    plot(cannonGraph, normUpperCannon, 'b', 'LineWidth',.5)
-    plot(liveGraph, normUpperLive, 'k', 'LineWidth',.5)
-    plot(teeGraph, normLowerTee, 'r', 'LineWidth',.5)
-    plot(bpGraph, normLowerBP, 'g', 'LineWidth',.5)
-    plot(cannonGraph, normLowerCannon, 'b', 'LineWidth',.5)
-    plot(liveGraph, normLowerLive, 'k', 'LineWidth',.5)
-    xline(normTeeEvents,'r-', 'LineWidth',2)
-    xline(normBPEvents,'g-', 'LineWidth',2)
-    xline(normCannonEvents,'b-', 'LineWidth',2)
-    xline(normLiveEvents,'k-',events, 'LineWidth',2)
-    xline(pitchInfo(1),'c-','Pitcher Foot Up (est)','LineWidth',1)
-    xline(pitchInfo(2),'c-','Pitcher Knee Up (est)','LineWidth',1)
-    xline(pitchInfo(3),'c-','Pitcher Hand Separation (est)','LineWidth',1)
-    xline(pitchInfo(4),'c-','Pitcher Foot Down (est)','LineWidth',1)
-    xline(pitchInfo(5),'c-','Pitch Release (est)','LineWidth',1)
-    xlim([-2 0.5])
-    legend([p1 p2 p3 p4],{'Tee','BP','Cannon','Live'},'Location','bestoutside')
-    title(strcat(signalName, ' Normalized For Each Pitch Mode: ', subjectName))
-    %xlabel('Time (s)')
-    ylabel(strcat(signalName, unit2'))
-    
-    % Plot all of the data normalized to the Live condition
-    %f = gcf;
-    %figure(f.Number+1)
-    subplot(3,1,3)
-    hold on
-    fill(newTeeGraph, inBetweenTeeLive,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
-    fill(newBPGraph, inBetweenBPLive,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
-    fill(newCannonGraph, inBetweenCannonLive,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
-    %fill(newLiveGraph, normInBetweenLive,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
-    p1 = plot(teeGraph, avgTeeLive, 'r', 'LineWidth',2);
-    p2 = plot(bpGraph, avgBPLive, 'g', 'LineWidth',2);
-    p3 = plot(cannonGraph, avgCannonLive, 'b', 'LineWidth',2);
-    %p4 = plot(liveGraph, normAvgLive, 'k', 'LineWidth',2);
-    plot(teeGraph, upperTeeLive, 'r', 'LineWidth',.5)
-    plot(bpGraph, upperBPLive, 'g', 'LineWidth',.5)
-    plot(cannonGraph, upperCannonLive, 'b', 'LineWidth',.5)
-    %plot(liveGraph, normUpperLive, 'k', 'LineWidth',.5)
-    plot(teeGraph, lowerTeeLive, 'r', 'LineWidth',.5)
-    plot(bpGraph, lowerBPLive, 'g', 'LineWidth',.5)
-    plot(cannonGraph, lowerCannonLive, 'b', 'LineWidth',.5)
-    %plot(liveGraph, normLowerLive, 'k', 'LineWidth',.5)
-    xline(normTeeEvents,'r-', 'LineWidth',2)
-    xline(normBPEvents,'g-', 'LineWidth',2)
-    xline(normCannonEvents,'b-', 'LineWidth',2)
-    xline(normLiveEvents,'k-',events, 'LineWidth',2)
-    xline(pitchInfo(1),'c-','Pitcher Foot Up (est)','LineWidth',1)
-    xline(pitchInfo(2),'c-','Pitcher Knee Up (est)','LineWidth',1)
-    xline(pitchInfo(3),'c-','Pitcher Hand Separation (est)','LineWidth',1)
-    xline(pitchInfo(4),'c-','Pitcher Foot Down (est)','LineWidth',1)
-    xline(pitchInfo(5),'c-','Pitch Release (est)','LineWidth',1)
-    yline(0,'k-','LineWidth',2)
-    xlim([-2 0.5])
-    legend([p1 p2 p3],{'Tee','BP','Cannon'},'Location','bestoutside')
-    title(strcat(signalName, ' Normalized to the Live Condition: ', subjectName))
-    xlabel('Time (s)')
-    ylabel(strcat(signalName, unit3))
+    ax= gca;
+    ax.FontSize = subLabelSize;
+    ax.FontWeight = 'bold';
+    legend([p1 p2 p3 p4],{'Tee','BP','RPM','Live'},'Location','southwest', "FontSize",subLabelSize,'FontWeight', boldLabel)
+    %title(strcat(graphName, ", Raw Data, For Each Pitch Mode- ", subjectName))
+    xlabel("Time (s)", 'FontSize', labelSize, 'FontWeight', boldLabel)
+    ylabel(strcat(graphName, unit1),"FontSize",labelSize,'FontWeight', boldLabel)
+%     
+%     % Plot all of the normalized data
+%     %f = gcf;
+%     %figure(f.Number+1)
+%     subplot(3,1,2)
+%     hold on
+%     fill(newTeeGraph, normInBetweenTee,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
+%     fill(newBPGraph, normInBetweenBP,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
+%     fill(newCannonGraph, normInBetweenCannon,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
+%     fill(newLiveGraph, normInBetweenLive,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
+%     p1 = plot(teeGraph, normAvgTee, 'r', 'LineWidth',2);
+%     p2 = plot(bpGraph, normAvgBP, 'g', 'LineWidth',2);
+%     p3 = plot(cannonGraph, normAvgCannon, 'b', 'LineWidth',2);
+%     p4 = plot(liveGraph, normAvgLive, 'k', 'LineWidth',2);
+%     plot(teeGraph, normUpperTee, 'r', 'LineWidth',.5)
+%     plot(bpGraph, normUpperBP, 'g', 'LineWidth',.5)
+%     plot(cannonGraph, normUpperCannon, 'b', 'LineWidth',.5)
+%     plot(liveGraph, normUpperLive, 'k', 'LineWidth',.5)
+%     plot(teeGraph, normLowerTee, 'r', 'LineWidth',.5)
+%     plot(bpGraph, normLowerBP, 'g', 'LineWidth',.5)
+%     plot(cannonGraph, normLowerCannon, 'b', 'LineWidth',.5)
+%     plot(liveGraph, normLowerLive, 'k', 'LineWidth',.5)
+%     xline(normTeeEvents,'r-', 'LineWidth',2)
+%     xline(normBPEvents,'g-', 'LineWidth',2)
+%     xline(normCannonEvents,'b-', 'LineWidth',2)
+%     xline(normLiveEvents,'k-',events, 'LineWidth',2)
+%     xline(pitchInfo(1),'c-','Pitcher Foot Up (est)','LineWidth',1)
+%     xline(pitchInfo(2),'c-','Pitcher Knee Up (est)','LineWidth',1)
+%     xline(pitchInfo(3),'c-','Pitcher Hand Separation (est)','LineWidth',1)
+%     xline(pitchInfo(4),'c-','Pitcher Foot Down (est)','LineWidth',1)
+%     xline(pitchInfo(5),'c-','Pitch Release (est)','LineWidth',1)
+%     xlim([-2 0.5])
+%     legend([p1 p2 p3 p4],{'Tee','BP','Cannon','Live'},'Location','bestoutside')
+%     %title(strcat(signalName, ' Normalized For Each Pitch Mode: ', subjectName))
+%     %xlabel('Time (s)')
+%     ylabel(strcat(signalName, unit2'))
+%     
+%     % Plot all of the data normalized to the Live condition
+%     %f = gcf;
+%     %figure(f.Number+1)
+%     subplot(3,1,3)
+%     hold on
+%     fill(newTeeGraph, inBetweenTeeLive,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
+%     fill(newBPGraph, inBetweenBPLive,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
+%     fill(newCannonGraph, inBetweenCannonLive,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
+%     %fill(newLiveGraph, normInBetweenLive,[.25 .25 .25],'facealpha',0.5,'EdgeColor',[.25 .25 .25],'EdgeAlpha', 0.25)
+%     p1 = plot(teeGraph, avgTeeLive, 'r', 'LineWidth',2);
+%     p2 = plot(bpGraph, avgBPLive, 'g', 'LineWidth',2);
+%     p3 = plot(cannonGraph, avgCannonLive, 'b', 'LineWidth',2);
+%     %p4 = plot(liveGraph, normAvgLive, 'k', 'LineWidth',2);
+%     plot(teeGraph, upperTeeLive, 'r', 'LineWidth',.5)
+%     plot(bpGraph, upperBPLive, 'g', 'LineWidth',.5)
+%     plot(cannonGraph, upperCannonLive, 'b', 'LineWidth',.5)
+%     %plot(liveGraph, normUpperLive, 'k', 'LineWidth',.5)
+%     plot(teeGraph, lowerTeeLive, 'r', 'LineWidth',.5)
+%     plot(bpGraph, lowerBPLive, 'g', 'LineWidth',.5)
+%     plot(cannonGraph, lowerCannonLive, 'b', 'LineWidth',.5)
+%     %plot(liveGraph, normLowerLive, 'k', 'LineWidth',.5)
+%     xline(normTeeEvents,'r-', 'LineWidth',2)
+%     xline(normBPEvents,'g-', 'LineWidth',2)
+%     xline(normCannonEvents,'b-', 'LineWidth',2)
+%     xline(normLiveEvents,'k-',events, 'LineWidth',2)
+%     xline(pitchInfo(1),'c-','Pitcher Foot Up (est)','LineWidth',1)
+%     xline(pitchInfo(2),'c-','Pitcher Knee Up (est)','LineWidth',1)
+%     xline(pitchInfo(3),'c-','Pitcher Hand Separation (est)','LineWidth',1)
+%     xline(pitchInfo(4),'c-','Pitcher Foot Down (est)','LineWidth',1)
+%     xline(pitchInfo(5),'c-','Pitch Release (est)','LineWidth',1)
+%     yline(0,'k-','LineWidth',2)
+%     xlim([-2 0.5])
+%     legend([p1 p2 p3],{'Tee','BP','Cannon'},'Location','bestoutside')
+%     %title(strcat(signalName, ' Normalized to the Live Condition: ', subjectName))
+%     xlabel('Time (s)')
+%     ylabel(strcat(signalName, unit3))
     
     % Save the figure (MATLAB and .png), for each subject
     f = gcf;
     f.WindowState = 'maximized';
-    fileName = strcat(signalName,"_", subjectName);
+    fileName = strcat(signalName,"_Raw_", subjectName);
     savefig(f, strcat(path, fileName));
-    saveas(f, strcat(path, fileName, '.png'));
+    saveas(f, strcat(path, fileName), 'png');
 end
 
 end
